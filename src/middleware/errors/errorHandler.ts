@@ -8,7 +8,7 @@ import { sendError } from '../../utils/response.js';
 
 const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   next();
-  
+
   if (err instanceof AppError) {
     return sendError(res, err.message, err.statusCode);
   }
