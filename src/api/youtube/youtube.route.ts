@@ -3,7 +3,7 @@ import * as youtubeController from './youtube.controller.js';
 
 const router = Router();
 
-// GET /api/youtube/recommend?keyword=...
-router.get('/recommend', youtubeController.recommendVideos);
+// 검색어 기반 추천 영상 조회
+router.get('/recommendations', youtubeController.recommendVideos);
 
 export default router;
