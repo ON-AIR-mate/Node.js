@@ -7,7 +7,9 @@ import { sendSuccess } from './utils/response.js';
 import passport from './auth/passport.js';
 import { requireAuth } from './middleware/authMiddleware.js';
 import youtubeRoutes from './api/youtube/youtube.route.js';
-
+import authRoutes from './routes/authRoutes.js';
+import swaggerUi from 'swagger-ui-express';
+import { specs } from './swagger.js';
 dotenv.config();
 
 const app: Express = express();
@@ -68,6 +70,9 @@ app.get('/protected', requireAuth, (req: Request, res: Response) => {
   sendSuccess(res, { message: '인증된 사용자만 접근 가능' });
 });
 
+// API 문서 (Swagger)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // 헬스 체크 엔드포인트
 app.get('/health', (req: Request, res: Response) => {
   sendSuccess(res, {
@@ -107,8 +112,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // API 라우트들을 여기에 추가
-// app.use('/api/auth', authRoutes);
-// app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/rooms', roomRoutes);
 app.use('/api/youtube', youtubeRoutes);
 
