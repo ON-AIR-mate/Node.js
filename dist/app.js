@@ -8,6 +8,7 @@ import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
 import passport from './auth/passport.js';
 import { requireAuth } from './middleware/authMiddleware.js';
+import youtubeRoutes from './api/youtube/youtube.route.js';
 dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
@@ -98,6 +99,7 @@ app.get('/', (req, res) => {
 // app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
 // app.use('/api/rooms', roomRoutes);
+app.use('/api/youtube', youtubeRoutes);
 // 404 에러 핸들링
 app.use((req, res, next) => {
     next(new AppError(404, 'Not Found'));
