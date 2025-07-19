@@ -10,6 +10,7 @@ import youtubeRoutes from './routes/recommendationRoute.js';
 import authRoutes from './routes/authRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
+
 dotenv.config();
 
 const app: Express = express();
