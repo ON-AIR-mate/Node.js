@@ -1,16 +1,19 @@
 import axios, { isAxiosError } from 'axios';
-import { formatISO8601Duration } from '../../utils/formatters.js';
+import { formatISO8601Duration } from '../utils/formatters.js';
 import {
   RecommendedVideoDto,
   YouTubeSearchResponse,
   YouTubeVideoDetailsResponse,
   YouTubeVideoDetailsResult,
-} from './youtube.dto.js';
+} from '../dtos/recommendationDto.js';
 
 const YOUTUBE_SEARCH_API_URL = 'https://www.googleapis.com/youtube/v3/search';
 const YOUTUBE_VIDEOS_API_URL = 'https://www.googleapis.com/youtube/v3/videos';
 
-export const getRecommendedVideos = async (keyword: string, limit: number = 3): Promise<RecommendedVideoDto[]> => {
+export const getRecommendedVideos = async (
+  keyword: string,
+  limit: number = 3,
+): Promise<RecommendedVideoDto[]> => {
   try {
     // 1. keyword로 비디오 검색
     const searchResponse = await axios.get<YouTubeSearchResponse>(YOUTUBE_SEARCH_API_URL, {

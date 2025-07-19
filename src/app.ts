@@ -6,7 +6,7 @@ import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import passport from './auth/passport.js';
 import { requireAuth } from './middleware/authMiddleware.js';
-import youtubeRoutes from './api/youtube/youtube.route.js';
+import youtubeRoutes from './routes/recommendationRoute.js';
 import authRoutes from './routes/authRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';

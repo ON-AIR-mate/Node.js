@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess } from '../../utils/response.js';
-import AppError from '../../middleware/errors/AppError.js';
-import * as youtubeService from './youtube.service.js';
+import { sendSuccess } from '../utils/response.js';
+import AppError from '../middleware/errors/AppError.js';
+import * as youtubeService from '../services/recommendationService.js';
 
 export const recommendVideos = async (req: Request, res: Response, next: NextFunction) => {
   const { keyword, limit } = req.query;
