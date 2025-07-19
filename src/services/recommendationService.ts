@@ -49,21 +49,23 @@ export const getRecommendedVideos = async (
     });
 
     // 3. 검색 결과와 상세 정보 조합
-    const videos: RecommendedVideoDto[] = searchResponse.data.items.map((item: YouTubeSearchResult) => {
-      const videoId = item.id.videoId;
-      const details = videoDetailsMap.get(videoId);
-      const isoDuration = details ? details.contentDetails.duration : '';
-      return {
-        videoId: videoId,
-        title: item.snippet.title,
-        thumbnail: item.snippet.thumbnails.default.url,
-        channelName: item.snippet.channelTitle || 'Unknown Channel',
-        viewCount: details ? parseInt(details.statistics.viewCount, 10) : 0,
-        uploadTime: item.snippet.publishedAt,
-        duration: isoDuration, // 원본 ISO 8601 형식
-        durationFormatted: formatISO8601Duration(isoDuration), // "mm:ss" 형식으로 변환된 값
-      };
-    });
+    const videos: RecommendedVideoDto[] = searchResponse.data.items.map(
+      (item: YouTubeSearchResult) => {
+        const videoId = item.id.videoId;
+        const details = videoDetailsMap.get(videoId);
+        const isoDuration = details ? details.contentDetails.duration : '';
+        return {
+          videoId: videoId,
+          title: item.snippet.title,
+          thumbnail: item.snippet.thumbnails.default.url,
+          channelName: item.snippet.channelTitle || 'Unknown Channel',
+          viewCount: details ? parseInt(details.statistics.viewCount, 10) : 0,
+          uploadTime: item.snippet.publishedAt,
+          duration: isoDuration, // 원본 ISO 8601 형식
+          durationFormatted: formatISO8601Duration(isoDuration), // "mm:ss" 형식으로 변환된 값
+        };
+      },
+    );
     return videos;
   } catch (error) {
     if (isAxiosError(error)) {
