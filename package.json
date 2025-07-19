@@ -22,14 +22,11 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.11.1",
-<<<<<<< HEAD
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",
     "axios": "^1.10.0",
-=======
->>>>>>> b3969bc262d6b7b5b30ffff28ef271f764917619
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
