@@ -31,7 +31,6 @@ tsconfig.tsbuildinfo
 
 dist/
 # Prisma
-/src/generated/
 prisma/migrations/dev/
 *.db
 *.db-journal
