@@ -30,6 +30,7 @@ out/
 tsconfig.tsbuildinfo
 
 # Prisma
+/src/generated/
 prisma/migrations/dev/
 *.db
 *.db-journal
