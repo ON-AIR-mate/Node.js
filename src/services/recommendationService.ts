@@ -5,6 +5,7 @@ import {
   YouTubeSearchResponse,
   YouTubeVideoDetailsResponse,
   YouTubeVideoDetailsResult,
+  YouTubeSearchResult,
 } from '../dtos/recommendationDto.js';
 
 const YOUTUBE_SEARCH_API_URL = 'https://www.googleapis.com/youtube/v3/search';
@@ -29,7 +30,7 @@ export const getRecommendedVideos = async (
       return [];
     }
 
-    const videoIds = searchResponse.data.items.map(item => item.id.videoId);
+    const videoIds = searchResponse.data.items.map((item: YouTubeSearchResult) => item.id.videoId);
 
     // 2단계: 검색된 영상 ID로 상세 정보 조회
     const detailsResponse = await axios.get<YouTubeVideoDetailsResponse>(YOUTUBE_VIDEOS_API_URL, {
@@ -43,12 +44,12 @@ export const getRecommendedVideos = async (
     console.log('YouTube Videos API 응답:', JSON.stringify(detailsResponse.data, null, 2));
 
     const videoDetailsMap = new Map<string, YouTubeVideoDetailsResult>();
-    detailsResponse.data.items.forEach(item => {
+    detailsResponse.data.items.forEach((item: YouTubeVideoDetailsResult) => {
       videoDetailsMap.set(item.id, item);
     });
 
     // 3. 검색 결과와 상세 정보 조합
-    const videos: RecommendedVideoDto[] = searchResponse.data.items.map(item => {
+    const videos: RecommendedVideoDto[] = searchResponse.data.items.map((item: YouTubeSearchResult) => {
       const videoId = item.id.videoId;
       const details = videoDetailsMap.get(videoId);
       const isoDuration = details ? details.contentDetails.duration : '';
@@ -64,7 +65,7 @@ export const getRecommendedVideos = async (
       };
     });
     return videos;
-  } catch (error: unknown) {
+  } catch (error) {
     if (isAxiosError(error)) {
       const apiError = error.response?.data?.error?.message || error.message;
       throw new Error(`YouTube API 호출 중 Axios 오류 발생: ${apiError}`);
