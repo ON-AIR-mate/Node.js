@@ -109,11 +109,24 @@ export const searchYoutubeVideos = async (
       data: videoList,
     });
   } catch (error: unknown) {
-    console.error(error);
+    console.error('YouTube search failed:', error);
+
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      if (status === 403) {
+        res.status(403).json({
+          success: false,
+          message: 'YouTube API 할당량 초과 또는 API 키 오류',
+        });
+        return;
+      }
+    }
+
     res.status(500).json({
       success: false,
       message: 'YouTube API 요청 실패',
       timestamp: new Date().toISOString(),
     });
+  }
   }
 };
