@@ -92,7 +92,10 @@ export const searchYoutubeVideos = async (
           },
         });
 
-        const videoData = statsRes.data.items[0];
+        const videoData = statsRes.data.items?.[0];
+        if (!videoData) {
+          throw new Error('Video data not found');
+        }
         return {
           videoId: item.id.videoId,
           title: item.snippet.title,
