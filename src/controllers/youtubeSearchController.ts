@@ -34,6 +34,23 @@ export const searchYoutubeVideos = async (
   try {
     const { query, limit = 10 } = req.query;
 
+    // 입력값 검증
+    if (!query || query.trim().length === 0) {
+      res.status(400).json({
+        success: false,
+        message: '검색어를 입력해주세요.',
+      });
+      return;
+    }
+
+    if (limit < 1 || limit > 50) {
+      res.status(400).json({
+        success: false,
+        message: 'limit은 1-50 사이여야 합니다.',
+      });
+      return;
+    }
+
     // Authorization 헤더 확인
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
