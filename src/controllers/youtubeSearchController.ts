@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
-import { YoutubeSearchDto } from './dto/youtube-search.dto';
+import { YoutubeSearchDto } from '../dtos/youtubeSearchDto';
 
 type YoutubeSearchItem = {
   id: {

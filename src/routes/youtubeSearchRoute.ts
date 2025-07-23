@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { searchYoutubeVideos } from './youtube-search.controller';
+import { searchYoutubeVideos } from '../controllers/youtubeSearchController';
 
 const router: Router = Router();
 
 /**
  * @swagger
- * /youtube/search:
+ * /api/youtube/search:
  *   get:
  *     summary: 유튜브 영상 검색
  *     description: 키워드로 유튜브 영상을 검색합니다.
