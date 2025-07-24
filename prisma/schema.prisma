@@ -91,11 +91,11 @@ model UserBlock {
 model Room {
   roomId              Int               @id @default(autoincrement()) @map("room_id")
   hostId              Int               @map("host_id")
+  videoId             String           @map("video_id") @db.VarChar(20)
   roomName            String            @map("room_name") @db.VarChar(100)
   isPublic            Boolean           @default(true) @map("is_public")
   isActive            Boolean           @default(true) @map("is_active")
   maxParticipants     Int               @default(6) @map("max_participants")
-  currentParticipants Int               @default(1) @map("current_participants")
   popularity          Int               @default(0)
   autoArchive         Boolean           @default(true) @map("auto_archive")
   inviteAuth          InviteAuth        @default(all) @map("invite_auth")
@@ -106,8 +106,10 @@ model Room {
   messages            RoomMessage[]
   participants        RoomParticipant[]
   host                User              @relation("HostUser", fields: [hostId], references: [userId], onDelete: Cascade)
+  video               YoutubeVideo      @relation(fields: [videoId], references: [videoId], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([hostId], map: "rooms_host_id_fkey")
+  @@index([videoId], map: "rooms_video_id_fkey")
   @@map("rooms")
 }
 
@@ -277,6 +279,7 @@ model YoutubeVideo {
   duration    String?   @db.VarChar(20)
   uploadedAt  DateTime? @map("uploaded_at")
   createdAt   DateTime  @default(now()) @map("created_at")
+  rooms       Room[]
 
   @@map("youtube_videos")
 }
