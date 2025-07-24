@@ -98,7 +98,6 @@ jobs:
           echo "Creating .env file..."
           echo "PORT=${{ secrets.PORT }}" > .env
           echo "NODE_ENV=${{ secrets.NODE_ENV }}" >> .env
-          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
           echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env
