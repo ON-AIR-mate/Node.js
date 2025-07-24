@@ -1,28 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-import { roomInfoService } from '../services/roomInfoService';
+import { roomInfoService } from '../services/roomInfoService.js';
+import AppError from '../middleware/errors/AppError.js';
+import { sendSuccess } from '../utils/response.js';
 
 const getRoomInfo = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { roomId: roomIdStr } = req.params;
     const roomId = parseInt(roomIdStr, 10);
 
-    // roomId가 유효한 숫자인지 확인
     if (isNaN(roomId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'BAD_REQUEST',
-        message: '유효하지 않은 방 ID입니다.',
-      });
+      return next(new AppError(400, '유효하지 않은 방 ID입니다.'));
     }
 
     const roomInfo = await roomInfoService.getRoomInfoById(roomId);
 
-    return res.status(200).json({
-      success: true,
-      data: roomInfo,
-    });
+    sendSuccess(res, roomInfo);
   } catch (error) {
-    // 발생한 에러를 다음 에러 처리 미들웨어로 전달
     next(error);
   }
 };
@@ -30,4 +23,3 @@ const getRoomInfo = async (req: Request, res: Response, next: NextFunction) => {
 export const roomInfoController = {
   getRoomInfo,
 };
-
