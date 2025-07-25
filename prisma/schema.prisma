@@ -91,7 +91,7 @@ model UserBlock {
 model Room {
   roomId              Int               @id @default(autoincrement()) @map("room_id")
   hostId              Int               @map("host_id")
-  videoId             String           @map("video_id") @db.VarChar(20)
+  videoId             String            @map("video_id") @db.VarChar(20)
   roomName            String            @map("room_name") @db.VarChar(100)
   isPublic            Boolean           @default(true) @map("is_public")
   isActive            Boolean           @default(true) @map("is_active")
