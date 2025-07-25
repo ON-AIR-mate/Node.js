@@ -6,7 +6,7 @@ import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import { requireAuth } from './middleware/authMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
-import youtubeRoutes from './routes/recommendationRoute.js';
+import youtubeRoutes from './routes/youtubeRecommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
 import roomInfoRouter from './routes/roomInfoRoute.js';
 import swaggerUi from 'swagger-ui-express';

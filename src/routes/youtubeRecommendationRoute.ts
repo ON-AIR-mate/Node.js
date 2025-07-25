@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { recommendVideos } from '../controllers/recommendationController.js';
+import { recommendVideos } from '../controllers/youtubeRecommendationController.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
