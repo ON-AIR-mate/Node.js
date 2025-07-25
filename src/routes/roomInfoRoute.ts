@@ -31,10 +31,6 @@ const roomInfoRouter = Router();
  *       404:
  *         description: 방을 찾을 수 없음
  */
-roomInfoRouter.get(
-  '/:roomId',
-  requireAuth,
-  roomInfoController.getRoomInfo
-);
+roomInfoRouter.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
 
 export default roomInfoRouter;
