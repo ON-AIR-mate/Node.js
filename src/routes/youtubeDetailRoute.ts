@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { getYoutubeVideoDetail } from '../controllers/youtubeDetailController';
-import { requireAuth } from '../middleware/authMiddleware'
+import { requireAuth } from '../middleware/authMiddleware';
 
 const router = Router();
 

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import axios from 'axios';
 import { YoutubeSearchDto } from '../dtos/youtubeSearchDto.js';
 
+// 유튜브 API 응답 타입 정의
 type YoutubeSearchItem = {
   id: {
     videoId: string;
@@ -26,15 +27,12 @@ type YoutubeVideoResult = {
   uploadTime: string;
 };
 
-// 명시적 타입으로 처리 (any 사용 X)
-export const searchYoutubeVideos = async (
-  req: Request<unknown, unknown, unknown, YoutubeSearchDto>,
-  res: Response,
-): Promise<void> => {
+// searchYoutubeVideos 함수
+export const searchYoutubeVideos = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { query, limit = 10 } = req.query;
+    // req.query에서 query와 limit 추출
+    const { query, limit = 10 } = req.query as unknown as YoutubeSearchDto;
 
-    // 입력값 검증
     if (!query || query.trim().length === 0) {
       res.status(400).json({
         success: false,
@@ -70,6 +68,7 @@ export const searchYoutubeVideos = async (
       return;
     }
 
+    // YouTube API 요청
     const response = await axios.get('https://www.googleapis.com/youtube/v3/search', {
       params: {
         q: query,
@@ -82,6 +81,7 @@ export const searchYoutubeVideos = async (
 
     const items = response.data.items as YoutubeSearchItem[];
 
+    // 각 영상에 대한 추가 정보 가져오기
     const videoList: YoutubeVideoResult[] = await Promise.all(
       items.map(async item => {
         const statsRes = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
@@ -96,6 +96,7 @@ export const searchYoutubeVideos = async (
         if (!videoData) {
           throw new Error('Video data not found');
         }
+
         return {
           videoId: item.id.videoId,
           title: item.snippet.title,
@@ -107,6 +108,7 @@ export const searchYoutubeVideos = async (
       }),
     );
 
+    // 결과 응답
     res.status(200).json({
       success: true,
       data: videoList,
