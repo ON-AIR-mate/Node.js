@@ -6,10 +6,10 @@ const router = Router();
 
 /**
  * @swagger
- * /youtube/videos/{videoId}:
+ * /api/youtube/videos/{videoId}:
  *   get:
  *     summary: 유튜브 영상 상세 조회
- *     description: 특정 videoId에 대한 유튜브 영상 정보를 조회합니다.
+ *     description: 특정 videoId에 대한 유튜브 영상 정보를 조회하고 DB에 저장합니다.
  *     tags:
  *       - YouTube
  *     security:
@@ -38,14 +38,22 @@ const router = Router();
  *                       type: string
  *                     title:
  *                       type: string
+ *                     description:
+ *                       type: string
  *                     thumbnail:
  *                       type: string
  *                     channelName:
  *                       type: string
+ *                     channelIcon:
+ *                       type: string
  *                     viewCount:
  *                       type: integer
- *                     uploadTime:
+ *                     duration:
  *                       type: string
+ *                       example: PT15M33S
+ *                     uploadedAt:
+ *                       type: string
+ *                       format: date-time
  *       401:
  *         description: 인증 실패
  *       404:

@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import axios from 'axios';
-import { YoutubeSearchDto } from '../dtos/youtubeSearchDto.js';
 
 // 유튜브 API 응답 타입 정의
 type YoutubeSearchItem = {
@@ -27,11 +26,11 @@ type YoutubeVideoResult = {
   uploadTime: string;
 };
 
-// searchYoutubeVideos 함수
 export const searchYoutubeVideos = async (req: Request, res: Response): Promise<void> => {
   try {
-    // req.query에서 query와 limit 추출
-    const { query, limit = 10 } = req.query as unknown as YoutubeSearchDto;
+    // query 파라미터 추출 및 타입 단언
+    const query = req.query.query as string;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
 
     if (!query || query.trim().length === 0) {
       res.status(400).json({
@@ -45,16 +44,6 @@ export const searchYoutubeVideos = async (req: Request, res: Response): Promise<
       res.status(400).json({
         success: false,
         message: 'limit은 1-50 사이여야 합니다.',
-      });
-      return;
-    }
-
-    // Authorization 헤더 확인
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({
-        success: false,
-        message: '인증 정보가 누락되었습니다.',
       });
       return;
     }
