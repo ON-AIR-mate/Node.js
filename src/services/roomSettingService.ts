@@ -42,11 +42,25 @@ export const updateRoomSettings = async (
     inviteAuth: InviteAuth;
   }> = {};
 
-  if (maxParticipants !== undefined) dataToUpdate.maxParticipants = maxParticipants;
+  // maxParticipants 값 검증 (8, 15, 30명만 가능)
+  if (maxParticipants !== undefined) {
+    if (![8, 15, 30].includes(maxParticipants)) {
+      throw new AppError(400, '최대 참여 인원은 8명, 15명, 또는 30명으로만 설정할 수 있습니다.');
+    }
+    dataToUpdate.maxParticipants = maxParticipants;
+  }
+
   if (isPrivate !== undefined) dataToUpdate.isPublic = !isPrivate;
   if (autoArchiving !== undefined) dataToUpdate.autoArchive = autoArchiving;
-  if (invitePermission) dataToUpdate.inviteAuth = invitePermission as InviteAuth;
 
+  // invitePermission 값 검증
+  if (invitePermission) {
+    const lowercasedPermission = invitePermission.toLowerCase();
+    if (lowercasedPermission !== 'all' && lowercasedPermission !== 'host') {
+      throw new AppError(400, `유효하지 않은 초대 권한 값입니다. "ALL" 또는 "HOST"만 가능합니다.`);
+    }
+    dataToUpdate.inviteAuth = lowercasedPermission as InviteAuth;
+  }
   await prisma.room.update({
     where: { roomId: room.roomId },
     data: dataToUpdate,
