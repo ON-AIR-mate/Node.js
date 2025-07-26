@@ -43,6 +43,7 @@ export const findUserById = async (userId: number) => {
  * 토큰으로 유저 찾기
  */
 export const findUserByToken = async (token: string) => {
+  console.log('토큰:', token);
   return await prisma.user.findFirst({
     where: {
       refreshToken: token, // refreshToken 필드를 토큰 저장에 사용
