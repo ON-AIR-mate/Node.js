@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { updateRoomSettings } from '../controllers/roomSettingController.js';
+import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
@@ -45,7 +46,7 @@ const router = Router();
  *                 example: false
  *               invitePermission:
  *                 type: string
- *                 description: 초대 권한 (e.g., "ALL")
+ *                 description: '초대 권한 (e.g., "ALL")'
  *                 example: "ALL"
  *     responses:
  *       200:
@@ -62,16 +63,16 @@ const router = Router();
  *                   type: string
  *                   example: "방 설정이 수정되었습니다."
  *       400:
- *         description: 잘못된 요청 (예: 유효하지 않은 방 ID)
+ *         description: "잘못된 요청 (예: 유효하지 않은 방 ID)"
  *       401:
- *         description: 인증 실패 (토큰 없음)
+ *         description: "인증 실패 (토큰 없음)"
  *       403:
- *         description: 권한 없음 (방장이 아님)
+ *         description: "권한 없음 (방장이 아님)"
  *       404:
  *         description: 방을 찾을 수 없음
  *       500:
  *         description: 서버 내부 오류
  */
-router.put('/:roomId/settings', updateRoomSettings);
+router.put('/:roomId/settings', requireAuth, updateRoomSettings);
 
 export default router;
