@@ -37,8 +37,7 @@ model User {
   userChatMessages        UserChatMessage[]
   userChats1              UserChat[]            @relation("User1")
   userChats2              UserChat[]            @relation("User2")
-  user_feedbacks          user_feedbacks[]
-
+  userFeedbacks           UserFeedback[]
   @@map("users")
 }
 
