@@ -288,14 +288,15 @@ model YoutubeVideo {
   @@map("youtube_videos")
 }
 
-model user_feedbacks {
-  feedback_id Int      @id @default(autoincrement())
-  user_id     Int
-  content     String   @db.Text
-  created_at  DateTime @default(now())
-  users       User     @relation(fields: [user_id], references: [userId], onDelete: Cascade)
+model UserFeedback {
+  feedbackId Int      @id @default(autoincrement()) @map("feedback_id")
+  userId     Int      @map("user_id")
+  content    String   @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
-  @@index([user_id], map: "user_feedbacks_user_id_fkey")
+  @@index([userId], map: "user_feedbacks_user_id_fkey")
+  @@map("user_feedbacks")
 }
 
 enum FriendshipStatus {
