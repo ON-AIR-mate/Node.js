@@ -29,7 +29,8 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
       throw new AppError('AUTH_007');
     }
 
-    if (!nickname && profileImage === undefined) {
+    // 원본: if (!nickname && profileImage === undefined) {
+    if (!nickname && !profileImage) {
       throw new AppError('USER_004');
     }
 
