@@ -144,7 +144,7 @@ app.use('/api/youtube/videos', youtubeDetailRouter);
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new AppError('GENERAL_003')); // 'Not Found' 에러 코드 사용
+  next(new AppError('GENERAL_003')); // 404 에러 코드 사용
 });
 // 전역 에러 핸들러
 app.use(errorHandler);
