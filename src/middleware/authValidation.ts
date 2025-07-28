@@ -68,7 +68,10 @@ export const validateNickname = (req: Request, res: Response, next: NextFunction
   // 닉네임 형식 검증 (특수문자 제한 등 추가 가능)
   const nicknameRegex = /^[가-힣a-zA-Z0-9_-]{3,10}$/;
   if (!nicknameRegex.test(nickname)) {
-    throw new AppError('GENERAL_001', '닉네임은 3~10자의 한글, 영문, 숫자, -, _만 사용 가능합니다.');
+    throw new AppError(
+      'GENERAL_001',
+      '닉네임은 3~10자의 한글, 영문, 숫자, -, _만 사용 가능합니다.',
+    );
   }
 
   next();
