@@ -12,8 +12,10 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// 모든 User API는 인증이 필요합니다
-router.use(requireAuth);
+// 테스트용 라우트 (인증 불필요)
+router.get('/test', (req, res) => {
+  res.json({ message: 'User routes working!' });
+});
 
 /**
  * @swagger
@@ -62,7 +64,7 @@ router.use(requireAuth);
  *                   format: date-time
  *                   example: 2025-01-27T12:00:00Z
  */
-router.get('/profile', getProfile);
+router.get('/profile', requireAuth, getProfile);
 
 /**
  * @swagger
@@ -109,9 +111,9 @@ router.get('/profile', getProfile);
  *                   type: string
  *                   format: date-time
  *       409:
- *         description: 중복된 닉네임
+ *         description: 닉네임 중복
  */
-router.put('/profile', updateProfile);
+router.put('/profile', requireAuth, updateProfile);
 
 /**
  * @swagger
@@ -148,7 +150,7 @@ router.put('/profile', updateProfile);
  *                   type: string
  *                   format: date-time
  */
-router.get('/notification-settings', getNotificationSettings);
+router.get('/notification-settings', requireAuth, getNotificationSettings);
 
 /**
  * @swagger
@@ -198,17 +200,16 @@ router.get('/notification-settings', getNotificationSettings);
  *                   type: string
  *                   format: date-time
  */
-router.put('/notification-settings', updateNotificationSettings);
+router.put('/notification-settings', requireAuth, updateNotificationSettings);
 
 /**
  * @swagger
  * /api/users/participated-rooms:
  *   get:
- *     summary: 참여한 방 목록 조회
+ *     summary: 참여한 방 목록 조회 (30초 이상 체류)
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
- *     description: 사용자가 참여했던 방 목록 조회 (30초 이상 체류한 방)
  *     responses:
  *       200:
  *         description: 참여한 방 목록 조회 성공
@@ -227,36 +228,30 @@ router.put('/notification-settings', updateNotificationSettings);
  *                     properties:
  *                       roomId:
  *                         type: number
- *                         example: 123
+ *                         example: 1
  *                       roomTitle:
  *                         type: string
- *                         example: 방제목
+ *                         example: 방 제목
  *                       videoTitle:
  *                         type: string
- *                         example: 영상제목
- *                       videoThumbnail:
- *                         type: string
- *                         example: 썸네일URL
- *                       participatedAt:
+ *                         example: 영상 제목
+ *                       joinedAt:
  *                         type: string
  *                         format: date-time
  *                         example: 2025-01-01T12:00:00Z
- *                       bookmarks:
- *                         type: array
- *                         items:
- *                           type: object
- *                           properties:
- *                             bookmarkId:
- *                               type: number
- *                               example: 456
- *                             message:
- *                               type: string
- *                               example: 00:15:30 재밌는 장면
+ *                       leftAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: 2025-01-01T12:30:00Z
+ *                       duration:
+ *                         type: number
+ *                         description: 체류 시간 (초)
+ *                         example: 1800
  *                 timestamp:
  *                   type: string
  *                   format: date-time
  */
-router.get('/participated-rooms', getParticipatedRooms);
+router.get('/participated-rooms', requireAuth, getParticipatedRooms);
 
 /**
  * @swagger
@@ -282,6 +277,9 @@ router.get('/participated-rooms', getParticipatedRooms);
  *                   items:
  *                     type: object
  *                     properties:
+ *                       historyId:
+ *                         type: number
+ *                         example: 1
  *                       keyword:
  *                         type: string
  *                         example: 검색어
@@ -293,7 +291,7 @@ router.get('/participated-rooms', getParticipatedRooms);
  *                   type: string
  *                   format: date-time
  */
-router.get('/search-history', getSearchHistory);
+router.get('/search-history', requireAuth, getSearchHistory);
 
 /**
  * @swagger
@@ -337,6 +335,6 @@ router.get('/search-history', getSearchHistory);
  *                   type: string
  *                   format: date-time
  */
-router.post('/feedback', sendFeedback);
+router.post('/feedback', requireAuth, sendFeedback);
 
 export default router;

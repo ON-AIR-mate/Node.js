@@ -1,20 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { sendSuccess, sendError } from '../utils/response.js';
+import { sendSuccess } from '../utils/response.js';
 import * as userService from '../services/userServices.js';
+import AppError from '../middleware/errors/AppError.js';
 
 // 프로필 정보 조회
-export const getProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     const profile = await userService.getUserProfile(userId);
     sendSuccess(res, profile);
   } catch (error) {
@@ -23,46 +20,35 @@ export const getProfile = async (
 };
 
 // 프로필 정보 수정
-export const updateProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
     const { nickname, profileImage } = req.body;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     if (!nickname && profileImage === undefined) {
-      return sendError(res, '수정할 정보를 입력해주세요.', 400);
+      throw new AppError('USER_004');
     }
-    
+
     await userService.updateUserProfile(userId, { nickname, profileImage });
     sendSuccess(res, { message: '프로필이 수정되었습니다.' });
-  } catch (error: any) {
-    if (error.message === '이미 사용 중인 닉네임입니다.') {
-      return sendError(res, error.message, 409);
-    }
+  } catch (error) {
     next(error);
   }
 };
 
 // 알림 설정 조회
-export const getNotificationSettings = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getNotificationSettings = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     const settings = await userService.getNotificationSettings(userId);
     sendSuccess(res, settings);
   } catch (error) {
@@ -74,30 +60,30 @@ export const getNotificationSettings = async (
 export const updateNotificationSettings = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user?.userId;
     const { serviceNotification, advertisementNotification, nightNotification } = req.body;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     if (
       serviceNotification === undefined &&
       advertisementNotification === undefined &&
       nightNotification === undefined
     ) {
-      return sendError(res, '수정할 설정을 입력해주세요.', 400);
+      throw new AppError('USER_004');
     }
-    
+
     await userService.updateNotificationSettings(userId, {
       serviceNotification,
       advertisementNotification,
       nightNotification,
     });
-    
+
     sendSuccess(res, { message: '알림 설정이 수정되었습니다.' });
   } catch (error) {
     next(error);
@@ -105,18 +91,14 @@ export const updateNotificationSettings = async (
 };
 
 // 참여한 방 목록 조회
-export const getParticipatedRooms = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getParticipatedRooms = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     const rooms = await userService.getParticipatedRooms(userId);
     sendSuccess(res, rooms);
   } catch (error) {
@@ -125,18 +107,14 @@ export const getParticipatedRooms = async (
 };
 
 // 검색 기록 조회
-export const getSearchHistory = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getSearchHistory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     const history = await userService.getSearchHistory(userId);
     sendSuccess(res, history);
   } catch (error) {
@@ -145,23 +123,19 @@ export const getSearchHistory = async (
 };
 
 // 의견 보내기
-export const sendFeedback = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const sendFeedback = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
     const { content } = req.body;
-    
+
     if (!userId) {
-      return sendError(res, '인증이 필요합니다.', 401);
+      throw new AppError('AUTH_007');
     }
-    
+
     if (!content || content.trim().length === 0) {
-      return sendError(res, '의견 내용을 입력해주세요.', 400);
+      throw new AppError('USER_005');
     }
-    
+
     await userService.sendUserFeedback(userId, content);
     sendSuccess(res, { message: '의견을 보냈습니다. 소중한 의견 감사합니다.' });
   } catch (error) {
