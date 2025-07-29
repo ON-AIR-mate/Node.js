@@ -5,6 +5,7 @@ import errorHandler from './middleware/errors/errorHandler.js';
 import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import { requireAuth } from './middleware/authMiddleware.js';
+import getRoomsRoutes from './routes/activeRoomsRoute.js';
 import youtubeRoutes from './routes/recommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
 import authRoutes from './routes/authRoutes.js';
@@ -120,6 +121,7 @@ app.get('/', (req: Request, res: Response) => {
 // API 라우트들을 여기에 추가
 app.use('/api/auth', authRoutes);
 // app.use('/api/rooms', roomRoutes);
+app.use('/api/rooms', getRoomsRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/youtube', youtubeSearchRouter);
 
