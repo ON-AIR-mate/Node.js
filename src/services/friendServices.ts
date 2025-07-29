@@ -73,7 +73,7 @@ export const getFriendsList = async (userId: number): Promise<Friend[]> => {
     });
 
     // 친구 목록 생성
-    const friends = friendships.map((friendship) => {
+    const friends = friendships.map(friendship => {
       const friend = friendship.requestedBy === userId ? friendship.receiver : friendship.requester;
       return {
         userId: friend.userId,
@@ -85,7 +85,7 @@ export const getFriendsList = async (userId: number): Promise<Friend[]> => {
     });
 
     return friends;
-  } catch (error) {
+  } catch {
     throw new AppError('GENERAL_005');
   }
 };
@@ -93,7 +93,10 @@ export const getFriendsList = async (userId: number): Promise<Friend[]> => {
 /**
  * 친구 요청 전송
  */
-export const sendFriendRequest = async (requesterId: number, targetUserId: number): Promise<void> => {
+export const sendFriendRequest = async (
+  requesterId: number,
+  targetUserId: number,
+): Promise<void> => {
   // 자기 자신에게 요청 불가
   if (requesterId === targetUserId) {
     throw new AppError('FRIEND_003');
@@ -141,7 +144,7 @@ export const sendFriendRequest = async (requesterId: number, targetUserId: numbe
   }
 
   // 트랜잭션으로 친구 요청과 알림을 함께 생성
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async tx => {
     await tx.friendship.create({
       data: {
         requestedBy: requesterId,
@@ -185,7 +188,7 @@ export const getFriendRequests = async (userId: number): Promise<FriendRequest[]
     },
   });
 
-  return requests.map((request) => ({
+  return requests.map(request => ({
     requestId: request.friendshipId,
     userId: request.requester.userId,
     nickname: request.requester.nickname,
@@ -224,7 +227,7 @@ export const handleFriendRequest = async (
 
   // 요청 처리
   const newStatus: FriendshipStatus = action === 'ACCEPT' ? 'accepted' : 'rejected';
-  
+
   await prisma.friendship.update({
     where: { friendshipId: requestId },
     data: {
@@ -283,7 +286,11 @@ export const searchUserByNickname = async (nickname: string): Promise<SearchUser
 /**
  * 친구 방 초대
  */
-export const inviteFriendToRoom = async (userId: number, friendId: number, roomId: number): Promise<void> => {
+export const inviteFriendToRoom = async (
+  userId: number,
+  friendId: number,
+  roomId: number,
+): Promise<void> => {
   // 친구 관계 확인
   const isFriend = await prisma.friendship.findFirst({
     where: {
@@ -361,7 +368,10 @@ export const inviteFriendToRoom = async (userId: number, friendId: number, roomI
 /**
  * 친구의 라운지 조회 (공개된 컬렉션만)
  */
-export const getFriendLounge = async (userId: number, friendId: number): Promise<FriendLounge[]> => {
+export const getFriendLounge = async (
+  userId: number,
+  friendId: number,
+): Promise<FriendLounge[]> => {
   // 친구 관계 확인
   const isFriend = await prisma.friendship.findFirst({
     where: {
@@ -394,12 +404,13 @@ export const getFriendLounge = async (userId: number, friendId: number): Promise
     },
   });
 
-  return collections.map((collection) => ({
+  return collections.map(collection => ({
     collectionId: collection.collectionId,
     title: collection.title,
     description: collection.description,
     bookmarkCount: collection._count.bookmarks,
-    visibility: collection.visibility === 'friends' ? 'FRIENDS_ONLY' : collection.visibility.toUpperCase(),
+    visibility:
+      collection.visibility === 'friends' ? 'FRIENDS_ONLY' : collection.visibility.toUpperCase(),
     coverImage: collection.coverImage,
     createdAt: collection.createdAt.toISOString(),
     updatedAt: collection.updatedAt.toISOString(),
