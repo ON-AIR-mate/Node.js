@@ -120,7 +120,6 @@ model RoomParticipant {
   roomId        Int             @map("room_id")
   userId        Int             @map("user_id")
   role          ParticipantRole @default(participant)
-  leftAt        DateTime?       @map("left_at")
   joinedAt      DateTime        @default(now()) @map("joined_at")
   lastJoinedAt  DateTime        @default(now()) @map("last_joined_at")
   totalStayTime Int             @default(0) @map("total_stay_time")
