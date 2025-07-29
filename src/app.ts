@@ -8,13 +8,26 @@ import { requireAuth } from './middleware/authMiddleware.js';
 import getRoomsRoutes from './routes/activeRoomsRoute.js';
 import youtubeRoutes from './routes/recommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
+import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
 import authRoutes from './routes/authRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
-
+import { createServer } from 'http';
+import { initSocketServer } from './socket/index.js';
+import roomRoutes from './routes/roomRoute.js';
+import chatDirectRoutes from './routes/chatDirectRoute.js';
 dotenv.config();
 
 const app: Express = express();
+const server = createServer(app);
+
+try {
+  initSocketServer(server); // socket.io 연결
+} catch (error) {
+  console.error('Socket.IO 서버 초기화 실패:', error);
+  process.exit(1);
+}
+
 const port = process.env.PORT || 3000;
 const address = process.env.ADDRESS;
 
@@ -33,7 +46,9 @@ const corsOptions = {
 
     // 프로덕션 환경에서는 허용된 도메인만
     const allowedOrigins = [
+      //수정1
       address,
+      'https://54.180.254.48:3000',
       //'https://your-frontend-domain.com', // 실제 프론트엔드 도메인으로 변경
       //'https://onairmate.vercel.app', // 예시 도메인
       'http://localhost:3000', // 로컬 개발용
@@ -120,10 +135,13 @@ app.get('/', (req: Request, res: Response) => {
 
 // API 라우트들을 여기에 추가
 app.use('/api/auth', authRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/chat/direct', chatDirectRoutes);
 // app.use('/api/rooms', roomRoutes);
 app.use('/api/rooms', getRoomsRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/youtube', youtubeSearchRouter);
+app.use('/api/youtube/videos', youtubeDetailRouter);
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -133,7 +151,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // 전역 에러 핸들러
 app.use(errorHandler);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
   console.log(`API Docs available at http://localhost:${port}/api-docs`);
   console.log(`Health check at http://localhost:${port}/health`);
