@@ -8,14 +8,29 @@ import { requireAuth } from './middleware/authMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
 import youtubeRoutes from './routes/youtubeRecommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
+import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
+import userRoutes from './routes/userRoutes.js';
 import roomInfoRouter from './routes/roomInfoRoute.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
-
+import { createServer } from 'http';
+import { initSocketServer } from './socket/index.js';
+import roomRoutes from './routes/roomRoute.js';
+import chatDirectRoutes from './routes/chatDirectRoute.js';
 dotenv.config();
 
 const app: Express = express();
+const server = createServer(app);
+
+try {
+  initSocketServer(server); // socket.io 연결
+} catch (error) {
+  console.error('Socket.IO 서버 초기화 실패:', error);
+  process.exit(1);
+}
+
 const port = process.env.PORT || 3000;
+const address = process.env.ADDRESS;
 
 // CORS 설정
 const corsOptions = {
@@ -28,14 +43,20 @@ const corsOptions = {
       callback(null, true);
       return;
     }
+    console.log('start: 배포 연결 실행');
 
     // 프로덕션 환경에서는 허용된 도메인만
     const allowedOrigins = [
-      'https://your-frontend-domain.com', // 실제 프론트엔드 도메인으로 변경
-      'https://onairmate.vercel.app', // 예시 도메인
+      //수정1
+      address,
+      'https://54.180.254.48:3000',
+      //'https://your-frontend-domain.com', // 실제 프론트엔드 도메인으로 변경
+      //'https://onairmate.vercel.app', // 예시 도메인
       'http://localhost:3000', // 로컬 개발용
       'http://localhost:3001', // 로컬 개발용
     ];
+    console.log('배포 주소', address);
+    console.log('연결 origin:', origin);
 
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
@@ -115,19 +136,22 @@ app.get('/', (req: Request, res: Response) => {
 
 // API 라우트들을 여기에 추가
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/chat/direct', chatDirectRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/youtube', youtubeSearchRouter);
+app.use('/api/youtube/videos', youtubeDetailRouter);
 app.use('/api/rooms', roomInfoRouter);
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(404, 'Not Found'));
+  next(new AppError('GENERAL_003')); // 404 에러 코드 사용
 });
-
 // 전역 에러 핸들러
 app.use(errorHandler);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
   console.log(`API Docs available at http://localhost:${port}/api-docs`);
   console.log(`Health check at http://localhost:${port}/health`);
