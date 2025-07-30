@@ -14,7 +14,7 @@ interface Friend {
 
 interface FriendRequest {
   requestId: number;
-  userId: number;
+  userId: number;g
   nickname: string;
   profileImage: string | null;
   popularity: number;
@@ -26,6 +26,7 @@ interface SearchUser {
   nickname: string;
   profileImage: string | null;
   popularity: number;
+  requestStatus: 'none' | 'pending' | 'accepted' | 'rejected';
 }
 
 interface FriendLounge {
@@ -267,7 +268,7 @@ export const deleteFriend = async (userId: number, friendId: number): Promise<vo
 /**
  * 닉네임으로 사용자 검색
  */
-export const searchUserByNickname = async (nickname: string): Promise<SearchUser[]> => {
+export const searchUserByNickname = async (nickname: string, currentUserId: number): Promise<SearchUser[]> => {
   const users = await prisma.user.findMany({
     where: {
       nickname: nickname, // 완전 일치
@@ -280,7 +281,38 @@ export const searchUserByNickname = async (nickname: string): Promise<SearchUser
     },
   });
 
-  return users;
+  const usersWithRequestStatus = await Promise.all(
+    users.map(async (user) => {
+      // 현재 유저와의 친구 관계 확인
+      const friendship = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { requestedBy: currentUserId, requestedTo: user.userId },
+            { requestedBy: user.userId, requestedTo: currentUserId },
+          ],
+        },
+      });
+
+      let requestStatus: 'none' | 'pending' | 'accepted' | 'rejected' = 'none';
+      
+      if (friendship) {
+        if (friendship.status === 'accepted') {
+          requestStatus = 'accepted';
+        } else if (friendship.status === 'pending') {
+          requestStatus = 'pending';
+        } else if (friendship.status === 'rejected') {
+          requestStatus = 'rejected';
+        }
+      }
+
+      return {
+        ...user,
+        requestStatus, // 친구 요청 상태 추가
+      };
+    })
+  );
+
+  return usersWithRequestStatus;
 };
 
 /**
