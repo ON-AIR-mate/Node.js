@@ -284,36 +284,39 @@ export const searchUserByNickname = async (
     },
   });
 
-  const usersWithRequestStatus = await Promise.all(
-    users.map(async user => {
-      // 현재 유저와의 친구 관계 확인
-      const friendship = await prisma.friendship.findFirst({
-        where: {
-          OR: [
-            { requestedBy: currentUserId, requestedTo: user.userId },
-            { requestedBy: user.userId, requestedTo: currentUserId },
-          ],
-        },
-      });
+  // 검색 결과가 없으면 바로 반환
+  if (users.length === 0) {
+    return [];
+  }
 
-      let requestStatus: 'none' | 'pending' | 'accepted' | 'rejected' = 'none';
+  // 모든 사용자와의 friendship 관계를 한 번에 조회
+  const userIds = users.map(user => user.userId);
+  const friendships = await prisma.friendship.findMany({
+    where: {
+      OR: [
+        { requestedBy: currentUserId, requestedTo: { in: userIds } },
+        { requestedBy: { in: userIds }, requestedTo: currentUserId },
+      ],
+    },
+  });
 
-      if (friendship) {
-        if (friendship.status === 'accepted') {
-          requestStatus = 'accepted';
-        } else if (friendship.status === 'pending') {
-          requestStatus = 'pending';
-        } else if (friendship.status === 'rejected') {
-          requestStatus = 'rejected';
-        }
-      }
+  // friendship 맵 생성 (userId -> status)
+  const friendshipMap = new Map<number, 'none' | 'pending' | 'accepted' | 'rejected'>();
+  friendships.forEach(friendship => {
+    const otherUserId =
+      friendship.requestedBy === currentUserId ? friendship.requestedTo : friendship.requestedBy;
+    friendshipMap.set(otherUserId, friendship.status as 'pending' | 'accepted' | 'rejected');
+  });
 
-      return {
-        ...user,
-        requestStatus, // 친구 요청 상태 추가
-      };
-    }),
-  );
+  // 사용자 정보와 친구 관계 상태 결합
+  const usersWithRequestStatus: SearchUser[] = users.map(user => ({
+    ...user,
+    requestStatus: (friendshipMap.get(user.userId) || 'none') as
+      | 'none'
+      | 'pending'
+      | 'accepted'
+      | 'rejected',
+  }));
 
   return usersWithRequestStatus;
 };
