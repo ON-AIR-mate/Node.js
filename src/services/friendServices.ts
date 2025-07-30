@@ -14,7 +14,7 @@ interface Friend {
 
 interface FriendRequest {
   requestId: number;
-  userId: number;g
+  userId: number;
   nickname: string;
   profileImage: string | null;
   popularity: number;
@@ -268,7 +268,10 @@ export const deleteFriend = async (userId: number, friendId: number): Promise<vo
 /**
  * 닉네임으로 사용자 검색
  */
-export const searchUserByNickname = async (nickname: string, currentUserId: number): Promise<SearchUser[]> => {
+export const searchUserByNickname = async (
+  nickname: string,
+  currentUserId: number,
+): Promise<SearchUser[]> => {
   const users = await prisma.user.findMany({
     where: {
       nickname: nickname, // 완전 일치
@@ -282,7 +285,7 @@ export const searchUserByNickname = async (nickname: string, currentUserId: numb
   });
 
   const usersWithRequestStatus = await Promise.all(
-    users.map(async (user) => {
+    users.map(async user => {
       // 현재 유저와의 친구 관계 확인
       const friendship = await prisma.friendship.findFirst({
         where: {
@@ -294,7 +297,7 @@ export const searchUserByNickname = async (nickname: string, currentUserId: numb
       });
 
       let requestStatus: 'none' | 'pending' | 'accepted' | 'rejected' = 'none';
-      
+
       if (friendship) {
         if (friendship.status === 'accepted') {
           requestStatus = 'accepted';
@@ -309,7 +312,7 @@ export const searchUserByNickname = async (nickname: string, currentUserId: numb
         ...user,
         requestStatus, // 친구 요청 상태 추가
       };
-    })
+    }),
   );
 
   return usersWithRequestStatus;
