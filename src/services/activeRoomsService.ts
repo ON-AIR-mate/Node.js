@@ -15,10 +15,7 @@ export class ActiveRoomService {
    * @param query - 필터링 및 정렬을 위한 쿼리 파라미터
    * @param userId - (Optional) 요청한 사용자의 ID. 시청 기록 기반 추천에 사용됩니다.
    */
-  public async findAll(
-    query: GetRoomsQueryDto,
-    userId?: number,
-  ): Promise<RoomsDataDto> {
+  public async findAll(query: GetRoomsQueryDto, userId?: number): Promise<RoomsDataDto> {
     console.log('Service: Finding rooms with query:', query);
 
     // 1. Prisma 쿼리 조건 구성 (검색, 정렬)
@@ -117,4 +114,3 @@ export class ActiveRoomService {
     };
   }
 }
-

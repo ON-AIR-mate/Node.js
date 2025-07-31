@@ -14,7 +14,7 @@ const activeRoomController = new ActiveRoomController(activeRoomService);
  *     summary: 활성화된 방 목록 조회
  *     description: 현재 활성화된 방 목록을 검색 및 정렬 조건에 따라 조회합니다.
  *     tags:
- *       - Rooms
+ *       - Room
  *     security:
  *       - bearerAuth: []
  *     parameters:

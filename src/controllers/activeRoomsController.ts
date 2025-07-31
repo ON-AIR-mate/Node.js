@@ -32,10 +32,7 @@ export class ActiveRoomController {
       let searchType: GetRoomsQueryDto['searchType'];
       if (rawSearchType) {
         if (!isSearchTypeOption(rawSearchType)) {
-          throw new AppError(
-            'GENERAL_001',
-            `'searchType' 파라미터가 유효하지 않습니다.`,
-          );
+          throw new AppError('GENERAL_001', `'searchType' 파라미터가 유효하지 않습니다.`);
         }
         if (!keyword) {
           throw new AppError(
