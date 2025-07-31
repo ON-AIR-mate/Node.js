@@ -14,7 +14,6 @@ export const updateRoomSettings = async (
     const updateDto: UpdateRoomSettingDto = req.body;
 
     if (!userId) {
-      // requireAuth 미들웨어에서 처리되지만, 안전을 위해 추가
       return next(new AppError('인증이 필요합니다.'));
     }
 
