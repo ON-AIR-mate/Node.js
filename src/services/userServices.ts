@@ -110,7 +110,11 @@ export const getParticipatedRooms = async (userId: number) => {
     const participations = await prisma.roomParticipant.findMany({
       where: {
         userId,
+<<<<<<< HEAD
         // 퇴장한 방만 조회 (leftAt이 null이 아닌 경우)
+=======
+        // 퇴장한 방만 조회 (left_at이 null이 아닌 경우)
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
         left_at: {
           not: null,
         },

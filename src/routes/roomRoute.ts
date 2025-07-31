@@ -1,5 +1,6 @@
 import express from 'express';
 
+import { roomInfoController } from '../controllers/roomInfoController.js';
 import {
   createRoom,
   joinRoom,
@@ -313,11 +314,18 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
 
 /**
  * @swagger
+<<<<<<< HEAD
  * /api/rooms/{roomId}/settings:
  *   put:
  *     summary: 방 설정 수정
  *     tags: [Room]
  *     description: 방의 설정을 수정합니다. 방장만 이 작업을 수행할 수 있습니다.
+=======
+ * /api/rooms/{roomId}:
+ *   get:
+ *     summary: 특정 방의 상세 정보 조회
+ *     tags: [Room]
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -325,6 +333,7 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  *         name: roomId
  *         required: true
  *         schema:
+<<<<<<< HEAD
  *           type: string
  *         description: 설정을 수정할 방의 ID
  *     requestBody:
@@ -358,11 +367,19 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  *     responses:
  *       200:
  *         description: 방 설정 수정 성공
+=======
+ *           type: integer
+ *         description: 방의 고유 ID
+ *     responses:
+ *       200:
+ *         description: 방 정보 조회 성공
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+<<<<<<< HEAD
  *                 success:
  *                   type: boolean
  *                   example: true
@@ -381,5 +398,65 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  *         description: 서버 내부 오류
  */
 router.put('/:roomId/settings', requireAuth, updateRoomSettings);
+=======
+ *                 roomId:
+ *                   type: integer
+ *                   example: 1
+ *                 roomTitle:
+ *                   type: string
+ *                   example: "테스트 방"
+ *                 videoId:
+ *                   type: string
+ *                   example: "dQw4w9WgXcQ"
+ *                 videoTitle:
+ *                   type: string
+ *                   example: "Never Gonna Give You Up"
+ *                 videoThumbnail:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+ *                 hostNickname:
+ *                   type: string
+ *                   example: "rick_astley"
+ *                 hostProfileImage:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://example.com/profile.jpg"
+ *                 hostPopularity:
+ *                   type: integer
+ *                   example: 100
+ *                 currentParticipants:
+ *                   type: integer
+ *                   example: 3
+ *                 maxParticipants:
+ *                   type: integer
+ *                   example: 8
+ *                 duration:
+ *                   type: string
+ *                   example: "00:15:30"
+ *                 isPrivate:
+ *                   type: boolean
+ *                   example: false
+ *                 isActive:
+ *                   type: boolean
+ *                   example: true
+ *                 autoArchiving:
+ *                   type: boolean
+ *                   example: false
+ *                 invitePermission:
+ *                   type: string
+ *                   enum: [HOST_ONLY, ALL]
+ *                   example: "HOST_ONLY"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-10-27T10:00:00.000Z"
+ *       401:
+ *         description: 인증 실패
+ *       404:
+ *         description: 방을 찾을 수 없음
+ */
+router.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
 
 export default router;

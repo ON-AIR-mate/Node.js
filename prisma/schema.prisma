@@ -104,8 +104,11 @@ model Room {
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
   videoId             String?           @map("video_id") @db.VarChar(20)
+<<<<<<< HEAD
   startTime           Int               @default(0)
   startType           rooms_startType   @default(BEGINNING)
+=======
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
   bookmarks           Bookmark[]
   messages            RoomMessage[]
   participants        RoomParticipant[]
@@ -123,7 +126,11 @@ model RoomParticipant {
   userId        Int             @map("user_id")
   role          ParticipantRole @default(participant)
   joinedAt      DateTime        @default(now()) @map("joined_at")
+<<<<<<< HEAD
   leftAt        DateTime?       @map("left_at")
+=======
+  left_at       DateTime?
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
   lastJoinedAt  DateTime        @default(now()) @map("last_joined_at")
   totalStayTime Int             @default(0) @map("total_stay_time")
   room          Room            @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
@@ -188,7 +195,10 @@ model Bookmark {
   originalBookmarkId Int?        @map("original_bookmark_id")
   createdAt          DateTime    @default(now()) @map("created_at")
   collectionId       Int?        @map("collection_id")
+<<<<<<< HEAD
   timeline           Int?        @default(0)
+=======
+>>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
   collection         Collection? @relation(fields: [collectionId], references: [collectionId])
   originalBookmark   Bookmark?   @relation("BookmarkCopy", fields: [originalBookmarkId], references: [bookmarkId])
   copiedBookmarks    Bookmark[]  @relation("BookmarkCopy")
