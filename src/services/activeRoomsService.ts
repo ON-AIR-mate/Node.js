@@ -70,13 +70,18 @@ export class ActiveRoomService {
 
     // 1. 검색 (Filtering)
     if (query.searchType && query.keyword) {
-      filteredRooms = filteredRooms.filter(room => {
-        const targetField = room[query.searchType as keyof RoomDto];
-        if (typeof targetField === 'string') {
+      const validSearchKeys: ('videoTitle' | 'roomTitle' | 'hostNickname')[] = [
+        'videoTitle',
+        'roomTitle',
+        'hostNickname',
+      ];
+
+      if (validSearchKeys.includes(query.searchType as any)) {
+        filteredRooms = filteredRooms.filter(room => {
+          const targetField = room[query.searchType as 'videoTitle' | 'roomTitle' | 'hostNickname'];
           return targetField.toLowerCase().includes(query.keyword!.toLowerCase());
-        }
-        return false;
-      });
+        });
+      }
     }
 
     // 2. 정렬 (Sorting)

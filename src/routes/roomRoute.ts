@@ -8,6 +8,7 @@ import {
   postRoomMessage,
   leaveRoom,
 } from '../controllers/roomController.js';
+
 import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
