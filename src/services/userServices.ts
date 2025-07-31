@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import AppError from '../middleware/errors/AppError.js';
 
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 // 사용자 프로필 조회
 export const getUserProfile = async (userId: number) => {
@@ -111,8 +110,8 @@ export const getParticipatedRooms = async (userId: number) => {
     const participations = await prisma.roomParticipant.findMany({
       where: {
         userId,
-        // 퇴장한 방만 조회 (leftAt이 null이 아닌 경우)
-        leftAt: {
+        // 퇴장한 방만 조회 (left_at이 null이 아닌 경우)
+        left_at: {
           not: null,
         },
       },
@@ -150,8 +149,8 @@ export const getParticipatedRooms = async (userId: number) => {
 
     // 30초 이상 체류한 방만 필터링
     const filteredParticipations = participations.filter(p => {
-      if (p.leftAt && p.joinedAt) {
-        const durationMs = p.leftAt.getTime() - p.joinedAt.getTime();
+      if (p.left_at && p.joinedAt) {
+        const durationMs = p.left_at.getTime() - p.joinedAt.getTime();
         const durationSeconds = durationMs / 1000;
         return durationSeconds >= 30;
       }

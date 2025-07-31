@@ -5,11 +5,8 @@ import errorHandler from './middleware/errors/errorHandler.js';
 import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import { requireAuth } from './middleware/authMiddleware.js';
-import getRoomsRoutes from './routes/activeRoomsRoute.js';
-import youtubeRoutes from './routes/recommendationRoute.js';
-import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
-import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
 import authRoutes from './routes/authRoutes.js';
+import youtubeRoutes from './routes/youtubeRoute.js';
 import userRoutes from './routes/userRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
@@ -139,14 +136,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/chat/direct', chatDirectRoutes);
-// app.use('/api/rooms', roomRoutes);
-app.use('/api/rooms', getRoomsRoutes);
-app.use('/api/youtube', youtubeRoutes);
-app.use('/api/youtube', youtubeSearchRouter);
-app.use('/api/youtube/videos', youtubeDetailRouter);
+app.use('/api/youtube', youtubeRoutes); // youtubeRecommendationRoute와 youtubeSearchRoute 병합
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
+  console.error('app.ts에서 404 에러 발생:', req.originalUrl);
   next(new AppError('GENERAL_003')); // 404 에러 코드 사용
 });
 // 전역 에러 핸들러
