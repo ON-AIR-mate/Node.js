@@ -5,17 +5,33 @@ import errorHandler from './middleware/errors/errorHandler.js';
 import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import { requireAuth } from './middleware/authMiddleware.js';
-import updateRoomSettings from './routes/roomSettingRoute.js';
+//import updateRoomSettings from './routes/roomSettingRoute.js';
 import youtubeRoutes from './routes/recommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
+import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
 import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import friendRoutes from './routes/friendRoutes.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
-
+import { createServer } from 'http';
+import { initSocketServer } from './socket/index.js';
+import roomRoutes from './routes/roomRoute.js';
+import chatDirectRoutes from './routes/chatDirectRoute.js';
 dotenv.config();
 
 const app: Express = express();
+const server = createServer(app);
+
+try {
+  initSocketServer(server); // socket.io 연결
+} catch (error) {
+  console.error('Socket.IO 서버 초기화 실패:', error);
+  process.exit(1);
+}
+
 const port = process.env.PORT || 3000;
+const address = process.env.ADDRESS;
 
 // CORS 설정
 const corsOptions = {
@@ -28,18 +44,29 @@ const corsOptions = {
       callback(null, true);
       return;
     }
+    console.log('start: 배포 연결 실행');
 
     // 프로덕션 환경에서는 허용된 도메인만
     const allowedOrigins = [
-      'https://your-frontend-domain.com', // 실제 프론트엔드 도메인으로 변경
-      'https://onairmate.vercel.app', // 예시 도메인
+      //수정1 - undefined 값 필터링
+      address,
+      'http://54.180.254.48:3000', // HTTP로 수정
+      'https://54.180.254.48:3000',
+      //'https://your-frontend-domain.com', // 실제 프론트엔드 도메인으로 변경
+      //'https://onairmate.vercel.app', // 예시 도메인
       'http://localhost:3000', // 로컬 개발용
       'http://localhost:3001', // 로컬 개발용
-    ];
+    ].filter(Boolean); // undefined나 null 값 제거
 
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    console.log('배포 주소', address);
+    console.log('연결 origin:', origin);
+
+    // origin이 없는 경우(same-origin 요청) 또는 허용된 origin인 경우
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('CORS 거부됨:', origin);
+      console.log('허용된 origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -115,20 +142,22 @@ app.get('/', (req: Request, res: Response) => {
 
 // API 라우트들을 여기에 추가
 app.use('/api/auth', authRoutes);
-// app.use('/api/rooms', roomRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/friends', friendRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/chat/direct', chatDirectRoutes);
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/youtube', youtubeSearchRouter);
-app.use('/api/rooms', updateRoomSettings);
+app.use('/api/youtube/videos', youtubeDetailRouter);
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
-  next(new AppError(404, 'Not Found'));
+  next(new AppError('GENERAL_003')); // 404 에러 코드 사용
 });
-
 // 전역 에러 핸들러
 app.use(errorHandler);
 
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
   console.log(`API Docs available at http://localhost:${port}/api-docs`);
   console.log(`Health check at http://localhost:${port}/health`);
