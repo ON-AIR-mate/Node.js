@@ -104,8 +104,6 @@ model Room {
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
   videoId             String?           @map("video_id") @db.VarChar(20)
-  startTime           Int               @default(0)
-  startType           rooms_startType   @default(BEGINNING)
   bookmarks           Bookmark[]
   messages            RoomMessage[]
   participants        RoomParticipant[]
@@ -188,7 +186,6 @@ model Bookmark {
   originalBookmarkId Int?        @map("original_bookmark_id")
   createdAt          DateTime    @default(now()) @map("created_at")
   collectionId       Int?        @map("collection_id")
-  timeline           Int?        @default(0)
   collection         Collection? @relation(fields: [collectionId], references: [collectionId])
   originalBookmark   Bookmark?   @relation("BookmarkCopy", fields: [originalBookmarkId], references: [bookmarkId])
   copiedBookmarks    Bookmark[]  @relation("BookmarkCopy")
@@ -368,9 +365,4 @@ enum NotificationStatus {
   read
 
   @@map("notification_status")
-}
-
-enum rooms_startType {
-  BOOKMARK
-  BEGINNING
 }
