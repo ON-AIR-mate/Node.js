@@ -24,8 +24,25 @@ const getRoomInfoById = async (roomId: number): Promise<RoomInfoResponseDto> => 
     },
   });
 
+  console.log('[Service] Room data:', room);
+
   if (!room) {
-    throw new AppError(`ID가 ${roomId}인 방을 찾을 수 없습니다.`);
+    console.error(`[Service] Room with ID ${roomId} not found.`);
+    throw new AppError('ROOM_001', `ID가 ${roomId}인 방을 찾을 수 없습니다.`);
+  }
+
+  console.log('[Service] Host data:', room.host);
+
+  if (!room.host) {
+    console.error(`[Service] Host for room ID ${roomId} not found.`);
+    throw new AppError('GENERAL_005', `ID가 ${roomId}인 방의 호스트 정보를 찾을 수 없습니다.`);
+  }
+
+  console.log('[Service] Video data:', room.video);
+
+  if (!room.video) {
+    console.error(`[Service] Video for room ID ${roomId} not found.`);
+    throw new AppError('ROOM_007', `ID가 ${roomId}인 방의 비디오 정보를 찾을 수 없습니다.`);
   }
 
   const roomInfo: RoomInfoResponseDto = {
