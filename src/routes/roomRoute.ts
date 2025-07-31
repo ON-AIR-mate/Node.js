@@ -9,7 +9,7 @@ import {
   postRoomMessage,
   leaveRoom,
 } from '../controllers/roomController.js';
-import { updateRoomSettings } from '../controllers/roomSettingController.js';
+//import { updateRoomSettings } from '../controllers/roomSettingController.js';
 import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -314,18 +314,10 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
 
 /**
  * @swagger
-<<<<<<< HEAD
- * /api/rooms/{roomId}/settings:
- *   put:
- *     summary: 방 설정 수정
- *     tags: [Room]
- *     description: 방의 설정을 수정합니다. 방장만 이 작업을 수행할 수 있습니다.
-=======
  * /api/rooms/{roomId}:
  *   get:
  *     summary: 특정 방의 상세 정보 조회
  *     tags: [Room]
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -333,72 +325,16 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  *         name: roomId
  *         required: true
  *         schema:
-<<<<<<< HEAD
- *           type: string
- *         description: 설정을 수정할 방의 ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             example:
- *               maxParticipants: 15
- *               isPrivate: true
- *               autoArchiving: false
- *               invitePermission: "ALL"
- *             properties:
- *               maxParticipants:
- *                 type: integer
- *                 description: 최대 참여 인원
- *                 example: 15
- *               isPrivate:
- *                 type: boolean
- *                 description: 비공개방 여부
- *                 example: true
- *               autoArchiving:
- *                 type: boolean
- *                 description: 자동 아카이빙 여부
- *                 example: false
- *               invitePermission:
- *                 type: string
- *                 description: '초대 권한 (e.g., "ALL")'
- *                 example: "ALL"
- *     responses:
- *       200:
- *         description: 방 설정 수정 성공
-=======
  *           type: integer
  *         description: 방의 고유 ID
  *     responses:
  *       200:
  *         description: 방 정보 조회 성공
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
-<<<<<<< HEAD
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "방 설정이 수정되었습니다."
- *       400:
- *         description: "잘못된 요청 (예: 유효하지 않은 방 ID)"
- *       401:
- *         description: "인증 실패 (토큰 없음)"
- *       403:
- *         description: "권한 없음 (방장이 아님)"
- *       404:
- *         description: 방을 찾을 수 없음
- *       500:
- *         description: 서버 내부 오류
- */
-router.put('/:roomId/settings', requireAuth, updateRoomSettings);
-=======
  *                 roomId:
  *                   type: integer
  *                   example: 1
@@ -457,6 +393,5 @@ router.put('/:roomId/settings', requireAuth, updateRoomSettings);
  *         description: 방을 찾을 수 없음
  */
 router.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
 
 export default router;

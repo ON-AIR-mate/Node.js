@@ -103,17 +103,12 @@ model Room {
   watched30s          Boolean           @default(false) @map("watched_30s")
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
-  videoId             String?           @map("video_id") @db.VarChar(20)
-<<<<<<< HEAD
-  startTime           Int               @default(0)
-  startType           rooms_startType   @default(BEGINNING)
-=======
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
+  videoId             String            @map("video_id") @db.VarChar(20)
   bookmarks           Bookmark[]
   messages            RoomMessage[]
   participants        RoomParticipant[]
   host                User              @relation("HostUser", fields: [hostId], references: [userId], onDelete: Cascade)
-  video               YoutubeVideo?     @relation("RoomVideo", fields: [videoId], references: [videoId])
+  video               YoutubeVideo      @relation("RoomVideo", fields: [videoId], references: [videoId], onDelete: NoAction, onUpdate: NoAction)
 
   @@index([hostId], map: "rooms_host_id_fkey")
   @@index([videoId], map: "rooms_video_id_fkey")
@@ -126,11 +121,7 @@ model RoomParticipant {
   userId        Int             @map("user_id")
   role          ParticipantRole @default(participant)
   joinedAt      DateTime        @default(now()) @map("joined_at")
-<<<<<<< HEAD
-  leftAt        DateTime?       @map("left_at")
-=======
   left_at       DateTime?
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
   lastJoinedAt  DateTime        @default(now()) @map("last_joined_at")
   totalStayTime Int             @default(0) @map("total_stay_time")
   room          Room            @relation(fields: [roomId], references: [roomId], onDelete: Cascade)
@@ -195,10 +186,6 @@ model Bookmark {
   originalBookmarkId Int?        @map("original_bookmark_id")
   createdAt          DateTime    @default(now()) @map("created_at")
   collectionId       Int?        @map("collection_id")
-<<<<<<< HEAD
-  timeline           Int?        @default(0)
-=======
->>>>>>> 7de86c878f9309570be8f8b03938d31a3e138bbd
   collection         Collection? @relation(fields: [collectionId], references: [collectionId])
   originalBookmark   Bookmark?   @relation("BookmarkCopy", fields: [originalBookmarkId], references: [bookmarkId])
   copiedBookmarks    Bookmark[]  @relation("BookmarkCopy")
@@ -378,9 +365,4 @@ enum NotificationStatus {
   read
 
   @@map("notification_status")
-}
-
-enum rooms_startType {
-  BOOKMARK
-  BEGINNING
 }
