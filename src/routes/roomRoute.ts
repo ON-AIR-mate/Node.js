@@ -1,5 +1,7 @@
 import express from 'express';
 
+import { roomInfoController } from '../controllers/roomInfoController.js';
+import * as roomSettingController from '../controllers/roomSettingController.js';
 import {
   createRoom,
   joinRoom,
@@ -310,5 +312,149 @@ router.post('/:roomId/messages', requireAuth, postRoomMessage);
  *                         format: date-time
  */
 router.get('/:roomId/messages', requireAuth, getRoomMessages);
+
+/**
+ * @swagger
+ * /api/rooms/{roomId}:
+ *   get:
+ *     summary: 특정 방의 상세 정보 조회
+ *     tags: [Room]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 방의 고유 ID
+ *     responses:
+ *       200:
+ *         description: 방 정보 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 roomId:
+ *                   type: integer
+ *                   example: 1
+ *                 roomTitle:
+ *                   type: string
+ *                   example: "테스트 방"
+ *                 videoId:
+ *                   type: string
+ *                   example: "dQw4w9WgXcQ"
+ *                 videoTitle:
+ *                   type: string
+ *                   example: "Never Gonna Give You Up"
+ *                 videoThumbnail:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+ *                 hostNickname:
+ *                   type: string
+ *                   example: "rick_astley"
+ *                 hostProfileImage:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://example.com/profile.jpg"
+ *                 hostPopularity:
+ *                   type: integer
+ *                   example: 100
+ *                 currentParticipants:
+ *                   type: integer
+ *                   example: 3
+ *                 maxParticipants:
+ *                   type: integer
+ *                   example: 8
+ *                 duration:
+ *                   type: string
+ *                   example: "00:15:30"
+ *                 isPrivate:
+ *                   type: boolean
+ *                   example: false
+ *                 isActive:
+ *                   type: boolean
+ *                   example: true
+ *                 autoArchiving:
+ *                   type: boolean
+ *                   example: false
+ *                 invitePermission:
+ *                   type: string
+ *                   enum: [HOST_ONLY, ALL]
+ *                   example: "HOST_ONLY"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-10-27T10:00:00.000Z"
+ *       401:
+ *         description: 인증 실패
+ *       404:
+ *         description: 방을 찾을 수 없음
+ */
+router.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
+
+/**
+ * @swagger
+ * /api/rooms/{roomId}/settings:
+ *   put:
+ *     summary: 방 설정 수정
+ *     description: 방장이 특정 방의 설정을 수정합니다.
+ *     tags:
+ *       - Room
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 설정을 수정할 방의 ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               maxParticipants:
+ *                 type: integer
+ *                 description: 최대 참여자 수
+ *                 example: 8
+ *               isPrivate:
+ *                 type: boolean
+ *                 description: 방 공개 여부 (true이면 비공개)
+ *                 example: true
+ *               autoArchiving:
+ *                 type: boolean
+ *                 description: 자동 아카이빙 여부
+ *                 example: true
+ *               invitePermission:
+ *                 type: string
+ *                 enum: [all, host]
+ *                 description: 초대 권한
+ *                 example: host
+ *     responses:
+ *       200:
+ *         description: 방 설정 수정 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 방 설정이 수정되었습니다.
+ *       401:
+ *         description: 인증 실패 또는 호스트가 아님
+ *       404:
+ *         description: 방을 찾을 수 없음
+ */
+router.put('/:roomId/settings', requireAuth, roomSettingController.updateRoomSettings);
 
 export default router;
