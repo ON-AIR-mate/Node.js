@@ -5,7 +5,6 @@ import { requireAuth } from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-// 의존성 인스턴스 생성 및 주입
 const activeRoomService = new ActiveRoomService();
 const activeRoomController = new ActiveRoomController(activeRoomService);
 /**
@@ -30,7 +29,7 @@ const activeRoomController = new ActiveRoomController(activeRoomService);
  *         schema:
  *           type: string
  *           enum: [videoTitle, roomTitle, hostNickname]
- *         description: '검색 기준 (영상제목, 방제목, 방장닉네임)'
+ *         description: '검색 기준 (videoTitle: 영상제목, roomTitle: 방제목, hostNickname: 방장 닉네임)'
  *       - in: query
  *         name: keyword
  *         schema:
