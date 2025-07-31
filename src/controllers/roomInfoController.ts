@@ -9,7 +9,7 @@ const getRoomInfo = async (req: Request, res: Response, next: NextFunction) => {
     const roomId = parseInt(roomIdStr, 10);
 
     if (isNaN(roomId)) {
-      return next(new AppError(400, '유효하지 않은 방 ID입니다.'));
+      return next(new AppError('유효하지 않은 방 ID입니다.'));
     }
 
     const roomInfo = await roomInfoService.getRoomInfoById(roomId);

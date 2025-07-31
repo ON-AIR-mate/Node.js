@@ -8,9 +8,7 @@ import { requireAuth } from './middleware/authMiddleware.js';
 import authRoutes from './routes/authRoutes.js';
 import youtubeRoutes from './routes/youtubeRecommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
-import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
 import userRoutes from './routes/userRoutes.js';
-import roomInfoRouter from './routes/roomInfoRoute.js';
 import swaggerUi from 'swagger-ui-express';
 import { specs } from './swagger.js';
 import { createServer } from 'http';
@@ -139,10 +137,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/chat/direct', chatDirectRoutes);
+app.use('/api/youtube', youtubeRoutes); // youtubeRecommendationRoute.js 와 youtubeSearchRoute.js 를 병합하여 사용해야 합니다.
 app.use('/api/youtube', youtubeRoutes);
 app.use('/api/youtube', youtubeSearchRouter);
-app.use('/api/youtube/videos', youtubeDetailRouter);
-app.use('/api/rooms', roomInfoRouter);
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {

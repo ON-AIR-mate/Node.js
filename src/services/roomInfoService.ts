@@ -25,7 +25,7 @@ const getRoomInfoById = async (roomId: number): Promise<RoomInfoResponseDto> => 
   });
 
   if (!room) {
-    throw new AppError(404, `ID가 ${roomId}인 방을 찾을 수 없습니다.`);
+    throw new AppError(`ID가 ${roomId}인 방을 찾을 수 없습니다.`);
   }
 
   const roomInfo: RoomInfoResponseDto = {
