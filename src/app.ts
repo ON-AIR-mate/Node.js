@@ -5,7 +5,6 @@ import errorHandler from './middleware/errors/errorHandler.js';
 import AppError from './middleware/errors/AppError.js';
 import { sendSuccess } from './utils/response.js';
 import { requireAuth } from './middleware/authMiddleware.js';
-//import updateRoomSettings from './routes/roomSettingRoute.js';
 import youtubeRoutes from './routes/recommendationRoute.js';
 import youtubeSearchRouter from './routes/youtubeSearchRoute.js';
 import youtubeDetailRouter from './routes/youtubeDetailRoute.js';
