@@ -454,6 +454,6 @@ router.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
  *       404:
  *         description: 방을 찾을 수 없음
  */
-router.patch('/:roomId/settings', requireAuth, roomSettingController.updateRoomSettings);
+router.put('/:roomId/settings', requireAuth, roomSettingController.updateRoomSettings);
 
 export default router;
