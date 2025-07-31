@@ -15,7 +15,7 @@ export const updateRoomSettings = async (
 
     if (!userId) {
       // requireAuth 미들웨어에서 처리되지만, 안전을 위해 추가
-      return next(new AppError(401, '인증이 필요합니다.'));
+      return next(new AppError('인증이 필요합니다.'));
     }
 
     await roomSettingService.updateRoomSettings(roomId, userId, updateDto);
