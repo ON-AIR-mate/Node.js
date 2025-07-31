@@ -1,6 +1,7 @@
 export interface RoomInfoResponseDto {
   roomId: number;
   roomTitle: string;
+  videoId: string;
   videoTitle: string;
   videoThumbnail: string;
   hostNickname: string;
