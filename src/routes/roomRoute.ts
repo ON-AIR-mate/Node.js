@@ -397,7 +397,7 @@ router.get('/:roomId', requireAuth, roomInfoController.getRoomInfo);
 /**
  * @swagger
  * /api/rooms/{roomId}/settings:
- *   patch:
+ *   put:
  *     summary: 방 설정 수정
  *     description: 방장이 특정 방의 설정을 수정합니다.
  *     tags:
