@@ -35,10 +35,7 @@ const getRoomInfoById = async (roomId: number): Promise<RoomInfoResponseDto> => 
 
   if (!room.host) {
     console.error(`[Service] Host for room ID ${roomId} not found.`);
-    throw new AppError(
-      'GENERAL_005',
-      `ID가 ${roomId}인 방의 호스트 정보를 찾을 수 없습니다.`,
-    );
+    throw new AppError('GENERAL_005', `ID가 ${roomId}인 방의 호스트 정보를 찾을 수 없습니다.`);
   }
 
   const video = await prisma.youtubeVideo.findUnique({
@@ -49,10 +46,7 @@ const getRoomInfoById = async (roomId: number): Promise<RoomInfoResponseDto> => 
 
   if (!video) {
     console.error(`[Service] Video for room ID ${roomId} not found.`);
-    throw new AppError(
-      'ROOM_007',
-      `ID가 ${roomId}인 방의 비디오 정보를 찾을 수 없습니다.`,
-    );
+    throw new AppError('ROOM_007', `ID가 ${roomId}인 방의 비디오 정보를 찾을 수 없습니다.`);
   }
 
   const roomInfo: RoomInfoResponseDto = {

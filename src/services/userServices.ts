@@ -152,41 +152,43 @@ export const getParticipatedRooms = async (userId: number) => {
 
     console.log(`[getParticipatedRooms] 30초 이상 체류한 방: ${filteredParticipations.length}`);
 
-    const results = await Promise.all(filteredParticipations.map(async p => {
-      // null 체크
-      if (!p.room) {
-        console.error(
-          `[getParticipatedRooms] room이 null입니다. participantId: ${p.participantId}`,
-        );
-        throw new AppError('ROOM_001', '참여 기록의 방 정보를 찾을 수 없습니다.');
-      }
+    const results = await Promise.all(
+      filteredParticipations.map(async p => {
+        // null 체크
+        if (!p.room) {
+          console.error(
+            `[getParticipatedRooms] room이 null입니다. participantId: ${p.participantId}`,
+          );
+          throw new AppError('ROOM_001', '참여 기록의 방 정보를 찾을 수 없습니다.');
+        }
 
-      const video = await prisma.youtubeVideo.findUnique({
+        const video = await prisma.youtubeVideo.findUnique({
           where: { videoId: p.room.videoId },
           select: {
-              title: true,
-              thumbnail: true,
-          }
-      });
+            title: true,
+            thumbnail: true,
+          },
+        });
 
-      if (!video) {
-        console.error(`[getParticipatedRooms] video가 null입니다. roomId: ${p.room.roomId}`);
-        throw new AppError('ROOM_007', '방의 비디오 정보를 찾을 수 없습니다.');
-      }
+        if (!video) {
+          console.error(`[getParticipatedRooms] video가 null입니다. roomId: ${p.room.roomId}`);
+          throw new AppError('ROOM_007', '방의 비디오 정보를 찾을 수 없습니다.');
+        }
 
-      return {
-        roomId: p.room.roomId,
-        roomTitle: p.room.roomName,
-        videoTitle: video.title || '제목 없음',
-        videoThumbnail: video.thumbnail || '',
-        participatedAt: p.joinedAt,
-        bookmarks:
-          p.room.bookmarks?.map(b => ({
-            bookmarkId: b.bookmarkId,
-            message: b.content || '',
-          })) || [],
-      };
-    }));
+        return {
+          roomId: p.room.roomId,
+          roomTitle: p.room.roomName,
+          videoTitle: video.title || '제목 없음',
+          videoThumbnail: video.thumbnail || '',
+          participatedAt: p.joinedAt,
+          bookmarks:
+            p.room.bookmarks?.map(b => ({
+              bookmarkId: b.bookmarkId,
+              message: b.content || '',
+            })) || [],
+        };
+      }),
+    );
     return results;
   } catch (error) {
     console.error('[getParticipatedRooms] 에러 발생:', error);
