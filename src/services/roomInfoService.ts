@@ -49,6 +49,7 @@ const getRoomInfoById = async (roomId: number): Promise<RoomInfoResponseDto> => 
     roomId: room.roomId,
     roomTitle: room.roomName,
 
+    videoId: room.video.videoId,
     videoTitle: room.video.title,
     videoThumbnail: room.video.thumbnail ?? '',
     duration: room.video.duration ?? 'PT0S',

@@ -140,6 +140,7 @@ app.use('/api/youtube', youtubeRoutes); // youtubeRecommendationRoute와 youtube
 
 // 404 에러 핸들링
 app.use((req: Request, res: Response, next: NextFunction) => {
+  console.error('app.ts에서 404 에러 발생:', req.originalUrl);
   next(new AppError('GENERAL_003')); // 404 에러 코드 사용
 });
 // 전역 에러 핸들러

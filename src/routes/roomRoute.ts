@@ -316,7 +316,7 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  * /api/rooms/{roomId}:
  *   get:
  *     summary: 특정 방의 상세 정보 조회
- *     tags: [Rooms]
+ *     tags: [Room]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -332,7 +332,60 @@ router.get('/:roomId/messages', requireAuth, getRoomMessages);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/RoomInfoSuccessResponse'
+ *               type: object
+ *               properties:
+ *                 roomId:
+ *                   type: integer
+ *                   example: 1
+ *                 roomTitle:
+ *                   type: string
+ *                   example: "테스트 방"
+ *                 videoId:
+ *                   type: string
+ *                   example: "dQw4w9WgXcQ"
+ *                 videoTitle:
+ *                   type: string
+ *                   example: "Never Gonna Give You Up"
+ *                 videoThumbnail:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg"
+ *                 hostNickname:
+ *                   type: string
+ *                   example: "rick_astley"
+ *                 hostProfileImage:
+ *                   type: string
+ *                   format: url
+ *                   example: "https://example.com/profile.jpg"
+ *                 hostPopularity:
+ *                   type: integer
+ *                   example: 100
+ *                 currentParticipants:
+ *                   type: integer
+ *                   example: 3
+ *                 maxParticipants:
+ *                   type: integer
+ *                   example: 8
+ *                 duration:
+ *                   type: string
+ *                   example: "00:15:30"
+ *                 isPrivate:
+ *                   type: boolean
+ *                   example: false
+ *                 isActive:
+ *                   type: boolean
+ *                   example: true
+ *                 autoArchiving:
+ *                   type: boolean
+ *                   example: false
+ *                 invitePermission:
+ *                   type: string
+ *                   enum: [HOST_ONLY, ALL]
+ *                   example: "HOST_ONLY"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2023-10-27T10:00:00.000Z"
  *       401:
  *         description: 인증 실패
  *       404:

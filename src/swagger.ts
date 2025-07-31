@@ -59,6 +59,7 @@ const options: swaggerJsdoc.Options = {
           properties: {
             roomId: { type: 'integer', example: 123 },
             roomTitle: { type: 'string', example: '방제목' },
+            videoId: { type: 'string', example: 'dQw4w9WgXcQ' },
             videoTitle: { type: 'string', example: '영상제목' },
             videoThumbnail: { type: 'string', example: '썸네일URL' },
             hostNickname: { type: 'string', example: '방장닉네임' },
