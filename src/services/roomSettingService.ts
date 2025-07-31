@@ -44,7 +44,10 @@ export const updateRoomSettings = async (
   // maxParticipants 값 검증 (8, 15, 30명만 가능)
   if (maxParticipants !== undefined) {
     if (![8, 15, 30].includes(maxParticipants)) {
-      throw new AppError('ROOM_008', '최대 참여 인원은 8명, 15명, 또는 30명으로만 설정할 수 있습니다.');
+      throw new AppError(
+        'ROOM_008',
+        '최대 참여 인원은 8명, 15명, 또는 30명으로만 설정할 수 있습니다.',
+      );
     }
     dataToUpdate.maxParticipants = maxParticipants;
   }
@@ -56,7 +59,10 @@ export const updateRoomSettings = async (
   if (invitePermission) {
     const lowercasedPermission = invitePermission.toLowerCase();
     if (lowercasedPermission !== 'all' && lowercasedPermission !== 'host') {
-      throw new AppError('ROOM_009', `유효하지 않은 초대 권한 값입니다. "ALL" 또는 "HOST"만 가능합니다.`);
+      throw new AppError(
+        'ROOM_009',
+        `유효하지 않은 초대 권한 값입니다. "ALL" 또는 "HOST"만 가능합니다.`,
+      );
     }
     dataToUpdate.inviteAuth = lowercasedPermission as InviteAuth;
   }
