@@ -97,11 +97,6 @@ const activeRoomController = new ActiveRoomController(activeRoomService);
  */
 router.post('/', requireAuth, createRoom);
 
-<<<<<<< HEAD
-=======
-const activeRoomService = new ActiveRoomService();
-const activeRoomController = new ActiveRoomController(activeRoomService);
->>>>>>> 649dcc1ed4775f0d41ac5562cfb7a1520faddfd1
 /**
  * @swagger
  * /api/rooms:
