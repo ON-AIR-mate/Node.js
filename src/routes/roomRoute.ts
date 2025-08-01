@@ -1,10 +1,7 @@
 import express from 'express';
 
 import { roomInfoController } from '../controllers/roomInfoController.js';
-import {
-  getRoomSettings,
-  updateRoomSettings,
-} from '../controllers/roomSettingController.js';
+import { getRoomSettings, updateRoomSettings } from '../controllers/roomSettingController.js';
 import {
   createRoom,
   joinRoom,
