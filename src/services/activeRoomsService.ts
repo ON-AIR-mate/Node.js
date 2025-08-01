@@ -56,6 +56,9 @@ export class ActiveRoomService {
       where,
       include: {
         host: true, // 호스트 정보 포함
+        _count: {
+          select: { participants: true },
+        },
       },
       orderBy,
     });
@@ -83,7 +86,7 @@ export class ActiveRoomService {
           hostNickname: room.host.nickname,
           hostProfileImage: room.host.profileImage || 'url_profile_default',
           hostPopularity: room.host.popularity,
-          currentParticipants: room.currentParticipants,
+          currentParticipants: room._count.participants,
           maxParticipants: room.maxParticipants,
           duration: formatISO8601Duration(video.duration || 'PT0S'),
           isPrivate: !room.isPublic,
