@@ -101,6 +101,8 @@ model Room {
   autoArchive         Boolean           @default(true) @map("auto_archive")
   inviteAuth          InviteAuth        @default(all) @map("invite_auth")
   watched30s          Boolean           @default(false) @map("watched_30s")
+  startType           VideoStartType    @default(BEGINNING)
+  startTime           Int               @default(0)
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
   videoId             String            @map("video_id") @db.VarChar(20)
@@ -182,6 +184,7 @@ model Bookmark {
   roomId             Int         @map("room_id")
   title              String?     @db.VarChar(50)
   content            String?     @db.Text
+  timeline           Int?        @default(0)
   originalBookmarkId Int?        @map("original_bookmark_id")
   createdAt          DateTime    @default(now()) @map("created_at")
   collectionId       Int?        @map("collection_id")
@@ -339,6 +342,11 @@ enum ChatMessageType {
   roomInvite
 
   @@map("chat_message_type")
+}
+
+enum VideoStartType {
+  BOOKMARK
+  BEGINNING
 }
 
 enum CollectionVisibility {
