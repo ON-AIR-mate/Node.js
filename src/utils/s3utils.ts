@@ -9,7 +9,18 @@ export const deleteS3Object = async (imageUrl: string): Promise<void> => {
     }
 
     // URL에서 S3 키 추출
-    const url = new URL(imageUrl);
+    let url: URL;
+    try {
+      url = new URL(imageUrl);
+    } catch {
+      throw new Error('Invalid URL format provided');
+    }
+
+    // S3 URL인지 검증
+    if (!url.hostname.includes('amazonaws.com') || !url.hostname.includes('s3')) {
+      throw new Error('URL is not from S3');
+    }
+
     const key = url.pathname.substring(1); // 맨 앞의 '/' 제거
 
     if (!key) {
@@ -26,7 +37,6 @@ export const deleteS3Object = async (imageUrl: string): Promise<void> => {
   } catch (error) {
     console.error('S3 객체 삭제 실패:', error);
     // 호출자가 실패를 처리할 수 있도록 에러를 다시 던집니다
-    // 필요에 따라 주석 해제하세요
-    // throw error;
+    throw error;
   }
 };
