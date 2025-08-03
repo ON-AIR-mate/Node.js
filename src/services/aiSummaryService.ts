@@ -1,6 +1,7 @@
 // src/services/aiSummaryService.ts
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma.js';
 import AppError from '../middleware/errors/AppError.js';
+import { randomUUID } from 'crypto';
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
@@ -14,7 +15,10 @@ import {
   AISummaryFeedbackData,
 } from '../dtos/aiSummaryDto.js';
 
-const prisma = new PrismaClient();
+if (!process.env.BEDROCK_MODEL_ID) {
+  throw new Error('BEDROCK_MODEL_ID 환경변수가 필요합니다');
+}
+
 const bedrockClient = new BedrockRuntimeClient({
   region: process.env.AWS_REGION || 'ap-northeast-2',
   credentials: {
@@ -95,13 +99,19 @@ export class AiSummaryService {
     }
 
     // 5. 채팅 내용 포맷팅
-    const chatContent = messages.map(msg => `${msg.user.nickname}: ${msg.content}`).join('\n');
+    const MAX_MESSAGES = 1000;
+    const MAX_CONTENT_LENGTH = 50000;
+    const limitedMessages = messages.slice(-MAX_MESSAGES);
+    const chatContent = limitedMessages
+      .map(msg => `${msg.user.nickname}: ${msg.content}`)
+      .join('\n')
+      .slice(0, MAX_CONTENT_LENGTH);
 
     // 6. Claude 3.5 Sonnet 모델 호출
     const summary = await this.callClaudeModel(chatContent, video.title);
 
-    // 7. 임시 summaryId 생성 (DB 저장 없이)
-    const summaryId = `summary_${data.roomId}_${Date.now()}`;
+    // 7. 임시 summaryId 생성
+    const summaryId = `summary_${data.roomId}_${randomUUID()}`;
 
     return {
       summaryId,
@@ -169,18 +179,23 @@ ${chatContent}
       const command = new InvokeModelCommand(input);
       const response: InvokeModelCommandOutput = await bedrockClient.send(command);
 
-      const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as ClaudeResponse;
+      try {
+        const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as ClaudeResponse;
+        const responseText = responseBody.content[0]?.text || '{}';
+        const result = JSON.parse(responseText);
 
-      // Claude 응답에서 텍스트 추출
-      const responseText = responseBody.content[0]?.text || '{}';
+        if (!result.topicSummary || !result.emotionAnalysis) {
+          throw new Error('응답 형식 오류');
+        }
 
-      // JSON 파싱
-      const result = JSON.parse(responseText);
-
-      return {
-        topicSummary: result.topicSummary || '요약을 생성할 수 없습니다.',
-        emotionAnalysis: result.emotionAnalysis || '기쁨 - 분석할 수 없습니다.',
-      };
+        return {
+          topicSummary: result.topicSummary,
+          emotionAnalysis: result.emotionAnalysis,
+        };
+      } catch (parseError) {
+        console.error('Claude 응답 파싱 실패:', parseError);
+        throw new AppError('GENERAL_004', 'AI 응답 파싱에 실패했습니다.');
+      }
     } catch (error) {
       console.error('Claude 모델 호출 실패:', error);
       throw new AppError('GENERAL_004', 'AI 요약 생성에 실패했습니다.');
