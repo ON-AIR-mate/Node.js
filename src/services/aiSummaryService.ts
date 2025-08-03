@@ -149,7 +149,7 @@ ${chatContent}
 
     try {
       const input: InvokeModelCommandInput = {
-        modelId: process.env.BEDROCK_MODEL_ID!,  // Claude 3.5 Sonnet
+        modelId: process.env.BEDROCK_MODEL_ID!, // Claude 3.5 Sonnet
         contentType: 'application/json',
         accept: 'application/json',
         body: JSON.stringify({
