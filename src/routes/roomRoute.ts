@@ -41,7 +41,7 @@ const activeRoomController = new ActiveRoomController(activeRoomService);
  *               roomName:
  *                 type: string
  *                 example: 즐거운 방
- *               isPublic:
+ *               isPrivate:
  *                 type: boolean
  *                 example: true
  *               maxParticipants:
