@@ -110,12 +110,12 @@ export class ActiveRoomService {
     if (userId) {
       // 사용자가 참여했던 방 목록을 조회
       const userRooms = await prisma.roomParticipant.findMany({
-        where: { 
+        where: {
           userId,
-          room: { 
-            isActive: true, 
-            isPublic: true 
-          }
+          room: {
+            isActive: true,
+            isPublic: true,
+          },
         },
         orderBy: { joinedAt: 'desc' },
         take: 3,
