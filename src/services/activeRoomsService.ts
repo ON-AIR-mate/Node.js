@@ -71,9 +71,6 @@ export class ActiveRoomService {
     });
     const videoMap = new Map(videos.map(v => [v.videoId, v]));
 
-    console.log('rooms:', rooms);
-    console.log('videos:', videos);
-
     // 4. DTO 형태로 데이터 매핑 및 추가 필터링
     let roomDtos: RoomDto[] = rooms
       .map(room => {
