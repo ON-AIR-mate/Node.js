@@ -71,6 +71,9 @@ export class ActiveRoomService {
     });
     const videoMap = new Map(videos.map(v => [v.videoId, v]));
 
+    console.log('rooms:', rooms);
+    console.log('videos:', videos);
+
     // 4. DTO 형태로 데이터 매핑 및 추가 필터링
     let roomDtos: RoomDto[] = rooms
       .map(room => {
@@ -100,15 +103,22 @@ export class ActiveRoomService {
       );
     }
 
-    // 5. 데이터 분리 (continueWatching / onAirRooms)
+    // 5. 데이터 분리 (continueWatching: 이전에 참여했던 방 / onAirRooms: 활성화된 모든 방)
     const continueWatching: RoomDto[] = [];
     const onAirRooms = roomDtos;
 
-    // 예시 로직 (만약 userId가 제공되면)
     if (userId) {
-      // 사용자가 참여했던 방 목록을 조회하여 continueWatching 목록을 채우는 로직 추가
+      // 사용자가 참여했던 방 목록을 조회
       const userRooms = await prisma.roomParticipant.findMany({
-        where: { userId },
+        where: { 
+          userId,
+          room: { 
+            isActive: true, 
+            isPublic: true 
+          }
+        },
+        orderBy: { joinedAt: 'desc' },
+        take: 3,
         include: {
           room: {
             include: {
