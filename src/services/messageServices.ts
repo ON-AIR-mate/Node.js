@@ -1,6 +1,6 @@
 import { UserChatMessage } from '@prisma/client';
 import { SaveRoomMessageInput, SendDirectMessageDTO, RoomMessageDTO } from '../dtos/messageDto.js';
-
+import { createBookmarkfromSocket } from './bookmarkService.js';
 import { prisma } from '../lib/prisma.js';
 
 /**
@@ -48,6 +48,14 @@ export const saveRoomMessage = async ({
   content,
   messageType,
 }: SaveRoomMessageInput) => {
+  if (!roomId || typeof roomId !== 'number') {
+    throw new Error('유효한 방 ID가 필요합니다.');
+  }
+
+  if (!content || content.trim().length === 0) {
+    throw new Error('메시지가 필요합니다.');
+  }
+
   const message = await prisma.roomMessage.create({
     data: {
       roomId,
@@ -64,10 +72,13 @@ export const saveRoomMessage = async ({
       },
     },
   });
+  //북마크면 북마크 db 생성
+  if (messageType === 'system') await createBookmarkfromSocket(userId, roomId, content);
 
   const roomMessageDTO = {
     messageId: message.messageId, // Prisma 모델에서 메시지 PK
     userId: message.userId,
+    nickname: message.user.nickname,
     profileImage: message.user.profileImage ?? '',
     content: message.content,
     messageType: message.type,

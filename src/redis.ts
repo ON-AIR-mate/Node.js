@@ -22,4 +22,8 @@ redis.on('error', err => {
   console.error('❌ Redis connection error:', err);
 });
 
+redis.on('close', () => {
+  console.log('⚠️ Redis connection closed');
+});
+
 export default redis;
