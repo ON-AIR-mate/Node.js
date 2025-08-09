@@ -45,4 +45,6 @@ const router = Router();
  */
 router.post('/', requireAuth, collectionController.createCollection);
 
+router.get('/', requireAuth, collectionController.getCollections);
+
 export default router;
