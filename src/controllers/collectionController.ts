@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { CreateCollectionDto } from '../dtos/collectionDto';
-import * as collectionService from '../services/collectionService';
-import AppError from '../middleware/errors/AppError';
-import { sendSuccess } from '../utils/response';
+import { CreateCollectionDto } from '../dtos/collectionDto.js';
+import * as collectionService from '../services/collectionService.js';
+import AppError from '../middleware/errors/AppError.js';
+import { sendSuccess } from '../utils/response.js';
 import { CollectionVisibility } from '@prisma/client';
 
 export const createCollection = async (req: Request, res: Response, next: NextFunction) => {

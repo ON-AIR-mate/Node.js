@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { CreateCollectionDto, GetCollectionDto } from '../dtos/collectionDto';
-import AppError from '../middleware/errors/AppError';
+import { CreateCollectionDto, GetCollectionDto } from '../dtos/collectionDto.js';
+import AppError from '../middleware/errors/AppError.js';
 
 const prisma = new PrismaClient();
 
