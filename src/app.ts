@@ -17,7 +17,7 @@ import redis from './redis.js';
 import aiSummaryRoutes from './routes/aiSummaryRoutes.js';
 import roomRoutes from './routes/roomRoute.js';
 import chatDirectRoutes from './routes/chatDirectRoute.js';
-//import notificationRoutes from './routes/notificationRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import collectionRoute from './routes/collectionRoutes.js';
 import sharedCollectionRoute from './routes/sharedCollectionRoute.js';
 dotenv.config();
