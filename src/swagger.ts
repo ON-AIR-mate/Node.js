@@ -39,14 +39,18 @@ const options: swaggerJsdoc.Options = {
           type: 'object',
           properties: {
             collectionId: { type: 'integer', example: 123 },
-            title: { type: 'string', example: "컬렉션 제목" },
-            description: { type: 'string', example: "컬렉션 소개" },
+            title: { type: 'string', example: '컬렉션 제목' },
+            description: { type: 'string', example: '컬렉션 소개' },
             bookmarkCount: { type: 'integer', example: 5 },
-            visibility: { type: 'string', enum: ['public', 'friends', 'private'], example: 'private' },
-            coverImage: { type: 'string', nullable: true, example: "커버이미지URL" },
+            visibility: {
+              type: 'string',
+              enum: ['public', 'friends', 'private'],
+              example: 'private',
+            },
+            coverImage: { type: 'string', nullable: true, example: '커버이미지URL' },
             createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' }
-          }
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
         },
         CreateCollectionDto: {
           type: 'object',
