@@ -73,8 +73,26 @@ export const getCollectionDetailById = async (
     throw new AppError('COLLECTION_001', '컬렉션을 찾을 수 없습니다.');
   }
 
-  if (collection.visibility === 'private' && collection.userId !== userId) {
-    throw new AppError('COLLECTION_003', '비공개 컬렉션에 접근할 권한이 없습니다.');
+  // 접근 권한 확인
+  if (collection.userId !== userId) {
+    if (collection.visibility === 'private') {
+      throw new AppError('COLLECTION_003', '비공개 컬렉션에 접근할 권한이 없습니다.');
+    }
+
+    if (collection.visibility === 'friends') {
+      const friendship = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { requestedBy: userId, requestedTo: collection.userId, status: 'accepted' },
+            { requestedBy: collection.userId, requestedTo: userId, status: 'accepted' },
+          ],
+        },
+      });
+
+      if (!friendship) {
+        throw new AppError('COLLECTION_002', '친구에게만 공개된 컬렉션입니다.');
+      }
+    }
   }
 
   return {
