@@ -174,18 +174,18 @@ export default function chatHandler(io: Server, socket: Socket) {
   socket.on('joinDM', async (data: { receiverId: number }) => {
     try {
       const { receiverId } = data;
-      
+
       if (!receiverId) {
         socket.emit('error', { type: 'joinDM', message: 'Required fields are missing.' });
         return;
       }
-  
+
       const dmRoom = await getOrCreateChatRoom(userId, receiverId);
       const dmId = dmRoom.chatId;
-  
+
       socket.join(dmId.toString());
       console.log('[Socket] entered dm:', dmId);
-  
+
       console.log(`[Socket] ${userId}님이 ${dmId} dm 방에 입장`);
       socket.emit('success', { type: 'joinDM', message: 'DM 입장 성공' });
     } catch (err) {
