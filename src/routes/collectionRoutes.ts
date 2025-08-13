@@ -124,6 +124,10 @@ router.get('/:collectionId', requireAuth, collectionController.getCollectionDeta
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UpdateCollectionDto'
+ *           example:
+ *             title: "수정된 컬렉션 제목"
+ *             description: "수정된 컬렉션 소개"
+ *             visibility: "friends"
  *     responses:
  *       200:
  *         description: 컬렉션 수정 성공
@@ -164,6 +168,12 @@ router.delete('/:collectionId', requireAuth, collectionController.deleteCollecti
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/ReorderCollectionsDto'
+ *           example:
+ *             collectionOrders:
+ *               - collectionId: 123
+ *                 order: 1
+ *               - collectionId: 124
+ *                 order: 2
  *     responses:
  *       200:
  *         description: 컬렉션 순서 변경 성공
