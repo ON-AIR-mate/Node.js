@@ -7,13 +7,14 @@ import {
   getChatRoom,
 } from '../services/messageServices.js';
 import { roomInfoService } from '../services/roomInfoService.js';
-import { removeParticipant } from '../services/roomServices.js';
+import { removeParticipant, isHost } from '../services/roomServices.js';
 import { chatMessageType, MessageType } from '../dtos/messageDto.js';
 
 export default function chatHandler(io: Server, socket: Socket) {
   const user = socket.data.user;
   const userId = user.userId;
   console.log(`✅ 인증된 사용자 접속: ${user.nickname} (${userId}) , socketId: ${socket.id}`);
+
   /**
    * room 소캣 이벤트
    */
@@ -23,27 +24,37 @@ export default function chatHandler(io: Server, socket: Socket) {
     try {
       const { roomId, nickname } = data;
       if (!roomId || !nickname) {
-        socket.emit('error', { type: 'joinRoom', message: 'roomId and nickname required' });
+        socket.emit('error', { type: 'joinRoom', data: 'roomId and nickname required' });
         return;
       }
       //입장
       socket.join(roomId.toString());
       console.log('[Socket] entered room:', roomId);
 
+      const role = await isHost(roomId, userId);
+
       //redis
       const redis = await joinRoom(roomId, Number(userId), socket.id);
       console.log('[Socket] 입장 REDIS 처리: ', redis);
 
       io.to(roomId.toString()).emit('userJoined', {
-        user: nickname,
-        count: io.sockets.adapter.rooms.get(roomId.toString())?.size || 0,
+        data: {
+          user: nickname,
+          count: io.sockets.adapter.rooms.get(roomId.toString())?.size || 0,
+        },
       });
       console.log(`[Socket] ${nickname}님이 ${roomId} 방에 입장`);
 
-      socket.emit('success', { type: 'joinRoom', message: '방 참여 성공' });
+      socket.emit('roomEnterSuccess', {
+        type: 'joinRoom',
+        data: {
+          message: '방 참여 성공',
+          user: { nickname: user.nickname, role: role },
+        },
+      });
     } catch (error) {
       console.log('[Socket] joinRoom 소캣 통신에러:', error);
-      socket.emit('error', { type: 'joinRoom', message: '방 참여 실패' });
+      socket.emit('error', { type: 'joinRoom', data: '방 참여 실패' });
     }
   });
 
@@ -52,7 +63,7 @@ export default function chatHandler(io: Server, socket: Socket) {
     try {
       const { roomId, nickname } = data;
       if (!nickname || !roomId) {
-        socket.emit('error', { type: 'enterRoom', message: 'Required fields are missing.' });
+        socket.emit('error', { type: 'enterRoom', data: 'Required fields are missing.' });
         return;
       }
 
@@ -61,10 +72,12 @@ export default function chatHandler(io: Server, socket: Socket) {
       if (!isIn) {
         socket.emit('error', {
           type: 'enterRoom',
-          message: '방 입장 실패 (해당하는 방의 참가자 아님)',
+          data: '방 입장 실패 (해당하는 방의 참가자 아님)',
         });
         return;
       }
+      const role = await isHost(roomId, userId);
+
       //해당 소캣이 room에 join함
       socket.join(roomId.toString());
       console.log('[Socket] entered room:', roomId);
@@ -73,7 +86,13 @@ export default function chatHandler(io: Server, socket: Socket) {
       const res = await enterRoom(Number(userId), socket.id);
       console.log('[Socket] enterRoom 이벤트 성공, redis: ', res);
 
-      socket.emit('success', { type: 'enterRoom', message: '방 입장 성공' });
+      socket.emit('roomEnterSuccess', {
+        type: 'enterRoom',
+        data: {
+          message: '방 입장 성공',
+          user: { nickname: user.nickname, role: role },
+        },
+      });
     } catch (error) {
       console.log('[Socket] enterRoom 소캣 통신에러:', error);
       socket.emit('error', { type: 'enterRoom', message: '방 입장 실패' });
@@ -89,7 +108,7 @@ export default function chatHandler(io: Server, socket: Socket) {
         if (!roomId || !nickname || !content || !messageType) {
           socket.emit('error', {
             type: 'sendRoomMessage',
-            message: 'Required fields are missing.',
+            data: 'Required fields are missing.',
           });
           return;
         }
@@ -97,7 +116,7 @@ export default function chatHandler(io: Server, socket: Socket) {
         if (!validRoomMessageTypes.includes(messageType as MessageType)) {
           socket.emit('error', {
             type: 'sendRoomMessage',
-            message: 'Invalid messageType (messageType must be general or system)',
+            data: 'Invalid messageType (messageType must be general or system)',
           });
           return;
         }
@@ -106,7 +125,7 @@ export default function chatHandler(io: Server, socket: Socket) {
         if (!isIn) {
           socket.emit('error', {
             type: 'sendRoomMessage',
-            message: '방 채팅 실패 (해당하는 방의 참가자 아님)',
+            data: '방 채팅 실패 (해당하는 방의 참가자 아님)',
           });
           return;
         }
@@ -123,10 +142,10 @@ export default function chatHandler(io: Server, socket: Socket) {
         io.to(roomId.toString()).emit('receiveRoomMessage', { data: message });
         console.log(`[Socket] 메시지: ${message}`);
 
-        socket.emit('success', { type: 'sendRoomMessage', message: '방 채팅 성공' });
+        socket.emit('success', { type: 'sendRoomMessage', data: '방 채팅 성공' });
       } catch (error) {
         console.log('[Socket] sendRoomMessage 소캣 통신에러:', error);
-        socket.emit('error', { type: 'sendRoomMessage', message: '방 채팅 실패' });
+        socket.emit('error', { type: 'sendRoomMessage', data: '방 채팅 실패' });
       }
     },
   );
@@ -142,16 +161,20 @@ export default function chatHandler(io: Server, socket: Socket) {
         return;
       }
       const updatedRoom = await roomInfoService.getRoomInfoById(roomId);
+      if (updatedRoom) console.log('[SOCKET] 방 설정 업데이트 준비 완료:', updatedRoom.roomTitle);
 
       //변경된 설정 브로드캐스트
-      io.to(roomId.toString()).emit('roomSettingsUpdated', { updatedRoom });
+      io.to(roomId.toString()).emit('roomSettingsUpdated', {
+        type: 'roomSettingsUpdated',
+        data: updatedRoom,
+      });
 
-      console.log(`[ROOM ${roomId}] Settings updated by owner ${userId}`);
+      console.log(`[SOCKET] [ROOM ${roomId}] Settings updated by owner ${userId}`);
 
-      socket.emit('success', { type: 'updateRoomSettings', message: '방 설정 성공' });
+      socket.emit('success', { type: 'updateRoomSettings', data: '방 설정 성공' });
     } catch (error) {
       console.log('[Socket] sendRoomMessage 소캣 통신에러:', error);
-      socket.emit('error', { type: 'updateRoomSettings', message: '방 설정 실패' });
+      socket.emit('error', { type: 'updateRoomSettings', data: '방 설정 실패' });
     }
   });
 
@@ -163,15 +186,27 @@ export default function chatHandler(io: Server, socket: Socket) {
       //퇴장 db 처리
       const leaveDB = await removeParticipant(Number(parsedRoomId), userId);
       console.log('leaveRoom 디비 처리:', leaveDB);
+      let role = 'participant';
+      if (leaveDB?.ishost === true) {
+        role = 'host';
+      }
       const leaveres = await leaveRoom(Number(parsedRoomId), Number(userId));
       console.log('[Socket] leaveRoom Redis 처리: ', leaveres);
       socket.leave(roomId.toString());
-      io.to(roomId.toString()).emit('userLeft', { userId, socketId: socket.id });
+      io.to(roomId.toString()).emit('userLeft', {
+        type: 'userLeft',
+        data: {
+          userId,
+          nickname: user.nickname,
+          role: role,
+          socketId: socket.id,
+        },
+      });
 
-      socket.emit('success', { type: 'leaveRoom', message: '방 퇴장 성공' });
+      socket.emit('success', { type: 'leaveRoom', data: '방 퇴장 성공' });
     } catch (err) {
       console.error('[Socket] leaveRoom error:', err); // 서버 로그 확인용
-      socket.emit('error', { type: 'leaveRoom', message: '방 퇴장 실패' });
+      socket.emit('error', { type: 'leaveRoom', data: '방 퇴장 실패' });
     }
   });
 
@@ -190,7 +225,7 @@ export default function chatHandler(io: Server, socket: Socket) {
       const { receiverId } = data;
 
       if (!receiverId) {
-        socket.emit('error', { type: 'joinDM', message: 'Required fields are missing.' });
+        socket.emit('error', { type: 'joinDM', data: 'Required fields are missing.' });
         return;
       }
 
@@ -201,10 +236,10 @@ export default function chatHandler(io: Server, socket: Socket) {
       console.log('[Socket] entered dm:', dmId);
 
       console.log(`[Socket] ${userId}님이 ${dmId} dm 방에 입장`);
-      socket.emit('success', { type: 'joinDM', message: 'DM 입장 성공' });
+      socket.emit('success', { type: 'joinDM', data: 'DM 입장 성공' });
     } catch (err) {
       console.error('[Socket] joinDM error:', err);
-      socket.emit('error', { type: 'joinDM', message: 'dm 입장 실패' });
+      socket.emit('error', { type: 'joinDM', data: 'dm 입장 실패' });
     }
   });
 
@@ -217,7 +252,7 @@ export default function chatHandler(io: Server, socket: Socket) {
         if (!receiverId || !content || !messageType) {
           socket.emit('error', {
             type: 'sendDirectMessage',
-            message: 'Required fields are missing.',
+            data: 'Required fields are missing.',
           });
           return;
         }
@@ -228,7 +263,7 @@ export default function chatHandler(io: Server, socket: Socket) {
         //DB 저장
         const validMessageTypes = ['general', 'collectionShare', 'roomInvite'];
         if (!validMessageTypes.includes(messageType)) {
-          socket.emit('error', { type: 'sendDirectMessage', message: 'Invalid message type' });
+          socket.emit('error', { type: 'sendDirectMessage', data: 'Invalid message type' });
           return;
         }
         const message = await saveDirectMessage(userId, {
@@ -242,10 +277,10 @@ export default function chatHandler(io: Server, socket: Socket) {
         io.to(dmId.toString()).emit('receiveDirectMessage', { data: message });
         console.log(`[Socket] DM 전송 완료: ${userId} -> ${dmId}: ${content}`);
 
-        socket.emit('success', { type: 'sendDirectMessage', message: 'DM 채팅 성공' });
+        socket.emit('success', { type: 'sendDirectMessage', data: 'DM 채팅 성공' });
       } catch (err) {
         console.error('[Socket] sendDirectMessage error:', err); // 서버 로그 확인용
-        socket.emit('error', { type: 'sendDirectMessage', message: 'dm 입장 실패' });
+        socket.emit('error', { type: 'sendDirectMessage', data: 'dm 입장 실패' });
       }
     },
   );
@@ -255,7 +290,7 @@ export default function chatHandler(io: Server, socket: Socket) {
     try {
       const { userId1, userId2 } = data;
       if (!userId1 || !userId2) {
-        socket.emit('error', { type: 'unFriend', message: 'Invalid message type' });
+        socket.emit('error', { type: 'unFriend', data: 'Invalid message type' });
         return;
       }
       const dmRoom = await getChatRoom(userId1, userId2);
@@ -263,10 +298,10 @@ export default function chatHandler(io: Server, socket: Socket) {
       socket.leave(dmId.toString());
       console.log(`[Socket] 친구 방 삭제 - ${dmId} 삭제 : ${userId1}, ${userId2}`);
 
-      socket.emit('success', { type: 'unFriend', message: '친구 해제 성공' });
+      socket.emit('success', { type: 'unFriend', data: '친구 해제 성공' });
     } catch (err) {
       console.error('[Socket] unFriend error:', err); // 서버 로그 확인용
-      socket.emit('error', { type: 'unFriend', message: 'Failed to leave room' });
+      socket.emit('error', { type: 'unFriend', data: 'Failed to leave room' });
     }
   });
 
