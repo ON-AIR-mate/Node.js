@@ -6,6 +6,7 @@ import { getIO } from '../socket/index.js';
 import redis from '../redis.js';
 import { USER_SOCKET_KEY } from '../socket/redisManager.js';
 import { saveDirectMessage } from './messageServices.js';
+import { roomInfoService } from '../services/roomInfoService.js';
 
 // 타입 정의
 interface Friend {
@@ -205,6 +206,8 @@ export const getFriendRequests = async (userId: number): Promise<FriendRequest[]
     },
   });
 
+  console.log('요청 목록 조회:', requests);
+
   return requests.map(request => ({
     requestId: request.friendshipId,
     userId: request.requester.userId,
@@ -242,6 +245,8 @@ export const handleFriendRequest = async (
     },
   });
 
+  console.log('요청 상태 확인:', request);
+
   if (!request) {
     console.error(`[친구 요청 처리 실패] 요청 ID ${requestId}가 존재하지 않음`);
     throw new AppError('FRIEND_006');
@@ -274,7 +279,7 @@ export const handleFriendRequest = async (
   // 요청 처리
   const newStatus: FriendshipStatus = action === 'ACCEPT' ? 'accepted' : 'rejected';
 
-  await prisma.friendship.update({
+  const fres = await prisma.friendship.update({
     where: { friendshipId: requestId },
     data: {
       status: newStatus,
@@ -282,6 +287,7 @@ export const handleFriendRequest = async (
       isAccepted: action === 'ACCEPT',
     },
   });
+  console.log('친구 요청 db 처리: ', fres);
 
   const actionMessage = action === 'ACCEPT' ? '수락' : '거절';
   console.log(
@@ -403,6 +409,17 @@ export const inviteFriendToRoom = async (
     },
   });
 
+  //4. 방장 정보 조회
+  const host = await prisma.user.findUnique({
+    where: { userId: room?.hostId },
+    select: {
+      userId: true,
+      nickname: true,
+      profileImage: true,
+      popularity: true,
+    },
+  });
+
   if (!room) {
     throw new AppError('ROOM_001');
   }
@@ -464,13 +481,14 @@ export const inviteFriendToRoom = async (
     });
 
     // 3. 방의 영상 정보 조회
-    const video = await tx.youtubeVideo.findUnique({
+    const video = await roomInfoService.getRoomInfoById(roomId);
+    /* const video = await tx.youtubeVideo.findUnique({
       where: { videoId: room.videoId },
       select: {
         title: true,
         thumbnail: true,
       },
-    });
+    }); */
 
     return { notification, inviter, video };
   });
@@ -483,7 +501,15 @@ export const inviteFriendToRoom = async (
       content: JSON.stringify({
         roomId: room.roomId,
         roomName: room.roomName,
-        videoTitle: result.video?.title || '',
+        hostNickname: host?.nickname,
+        hostProfileImage: host?.profileImage,
+        hostPopularity: host?.popularity,
+        currentParticipants: room.currentParticipants,
+        maxParticipants: room.maxParticipants,
+        videoTitle: result.video?.videoTitle || '',
+        videoThumbnail: result.video?.videoThumbnail || '',
+        duration: result.video?.duration,
+        isPrivate: result.video?.isPrivate,
         message: `${room.roomName} 방에 초대했습니다.`,
       }),
       type: 'roomInvite',
@@ -498,36 +524,31 @@ export const inviteFriendToRoom = async (
 
     // Redis에서 친구의 socketId 찾기
     const friendSocketId = await redis.get(USER_SOCKET_KEY(friendId));
-
+    console.log('친구 소캣: ', friendSocketId);
     if (friendSocketId) {
       // 특정 소켓으로 방 초대 알림 전송
 
       io.to(friendSocketId).emit('receiveDirectMessage', {
         type: 'receiveDirectMessage',
         data: {
+          messageId: message?.messageId,
           senderId: result.inviter!.userId,
           receiverId: friendId,
           content: `${room.roomName} 방에 초대했습니다.`,
           messageType: 'roomInvite', //('general','roomInvite','bookmarkShare')
-          createdAt: message?.createdAt,
-          roomInvite: {
-            inviter: {
-              userId: result.inviter!.userId,
-              nickname: result.inviter!.nickname,
-              profileImage: result.inviter!.profileImage,
-            },
-            room: {
-              roomId: room.roomId,
-              roomName: room.roomName,
-              currentParticipants: currentParticipants,
-              maxParticipants: room.maxParticipants,
-              isPrivate: !room.isPublic,
-            },
-            video: {
-              title: result.video?.title || '',
-              thumbnail: result.video?.thumbnail || '',
-            },
-            invitedAt: new Date().toISOString(),
+          timestamp: message?.timestamp,
+          room: {
+            roomId: room.roomId,
+            roomName: room.roomName,
+            hostNickname: host?.nickname,
+            hostProfileImage: host?.profileImage,
+            hostPopularity: host?.popularity,
+            currentParticipants: room.currentParticipants,
+            maxParticipants: room.maxParticipants,
+            videoTitle: result.video?.videoTitle || '',
+            videoThumbnail: result.video?.videoThumbnail || '',
+            duration: result.video?.duration,
+            isPrivate: result.video?.isPrivate,
           },
         },
       });
