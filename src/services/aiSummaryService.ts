@@ -270,7 +270,6 @@ export class AiSummaryService {
         topicSummary: topicSummary.substring(0, 200), // 최대 200자 제한
         emotionAnalysis: emotionAnalysis.substring(0, 200), // 최대 200자 제한
       };
-
     } catch (error) {
       console.error('[AI Summary] Claude 모델 호출 실패:', error);
 
