@@ -173,7 +173,6 @@ export class AiSummaryService {
       const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as ClaudeResponse;
       const responseText = responseBody.content[0]?.text || '';
 
-      // ===== 개선된 파싱 로직 시작 =====
       console.log('[AI Summary] 원본 응답:', responseText); // 디버깅용 로그
 
       let topicSummary = '';
@@ -271,7 +270,7 @@ export class AiSummaryService {
         topicSummary: topicSummary.substring(0, 200), // 최대 200자 제한
         emotionAnalysis: emotionAnalysis.substring(0, 200), // 최대 200자 제한
       };
-      // ===== 개선된 파싱 로직 끝 =====
+
     } catch (error) {
       console.error('[AI Summary] Claude 모델 호출 실패:', error);
 
