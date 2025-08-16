@@ -1,11 +1,10 @@
-// src/services/friendService.ts
 import { FriendshipStatus } from '@prisma/client';
 import AppError from '../middleware/errors/AppError.js';
 import { prisma } from '../lib/prisma.js';
 import { getIO } from '../socket/index.js';
 import redis from '../redis.js';
-import { USER_SOCKET_KEY } from '../socket/redisManager.js';
 import { saveDirectMessage } from './messageServices.js';
+import { USER_SOCKET_KEY } from '../socket/redisManager.js';
 
 // 타입 정의
 interface Friend {
@@ -49,7 +48,7 @@ interface FriendLounge {
  */
 export const getFriendsList = async (userId: number): Promise<Friend[]> => {
   try {
-    // 양방향 친구 관계 조회 (requestedBy 또는 requestedTo가 userId이고 status가 accepted인 경우)
+    // 양방향 친구 관계 조회
     const friendships = await prisma.friendship.findMany({
       where: {
         OR: [
@@ -77,21 +76,32 @@ export const getFriendsList = async (userId: number): Promise<Friend[]> => {
       },
     });
 
-    // 친구 목록 생성
-    const friends = friendships.map(friendship => {
-      const friend = friendship.requestedBy === userId ? friendship.receiver : friendship.requester;
-      return {
-        userId: friend.userId,
-        nickname: friend.nickname,
-        profileImage: friend.profileImage,
-        popularity: friend.popularity,
-        isOnline: null, // 실시간 온라인 상태는 추후 구현
-      };
-    });
+    // 친구 목록 생성 및 온라인 상태 확인
+    const friends = await Promise.all(
+      friendships.map(async friendship => {
+        const friend =
+          friendship.requestedBy === userId ? friendship.receiver : friendship.requester;
+
+        // Redis에서 socketId 존재 여부로 온라인 상태 확인
+        const socketId = await redis.get(USER_SOCKET_KEY(friend.userId));
+        const isOnline = !!socketId;
+
+        return {
+          userId: friend.userId,
+          nickname: friend.nickname,
+          profileImage: friend.profileImage,
+          popularity: friend.popularity,
+          isOnline: isOnline,
+        };
+      }),
+    );
 
     return friends;
-  } catch {
-    throw new AppError('GENERAL_005');
+  } catch (err) {
+    if (err instanceof AppError) {
+      throw err;
+    }
+    throw new AppError('GENERAL_005', '친구 목록을 조회하는 중 오류가 발생했습니다.');
   }
 };
 
@@ -111,7 +121,6 @@ export const sendFriendRequest = async (
   const targetUser = await prisma.user.findUnique({
     where: { userId: targetUserId },
   });
-
   if (!targetUser) {
     throw new AppError('FRIEND_005');
   }
@@ -125,41 +134,95 @@ export const sendFriendRequest = async (
       ],
     },
   });
-
   if (isBlocked) {
     throw new AppError('FRIEND_004');
   }
 
-  // 기존 친구 관계 확인 (양방향)
-  const existingFriendship = await prisma.friendship.findFirst({
+  // 1. 내가 상대방에게 보낸 요청이 있는지 확인
+  const myRequest = await prisma.friendship.findFirst({
     where: {
-      OR: [
-        { requestedBy: requesterId, requestedTo: targetUserId },
-        { requestedBy: targetUserId, requestedTo: requesterId },
-      ],
+      requestedBy: requesterId,
+      requestedTo: targetUserId,
     },
   });
 
-  if (existingFriendship) {
-    if (existingFriendship.status === 'accepted') {
-      throw new AppError('FRIEND_001');
-    } else if (existingFriendship.status === 'pending') {
-      throw new AppError('FRIEND_002');
-    } else if (existingFriendship.status === 'rejected') {
-      // 거절된 요청이 있는 경우 기존 요청을 삭제하고 새로운 요청 생성
+  if (myRequest) {
+    if (myRequest.status === 'accepted') {
+      throw new AppError('FRIEND_001'); // 이미 친구입니다.
+    } else if (myRequest.status === 'pending') {
+      throw new AppError('FRIEND_002'); // 이미 친구 요청을 보냈습니다.
+    } else if (myRequest.status === 'rejected') {
+      // 내가 보냈다가 거절된 요청이 있는 경우, 기존 기록을 삭제하고 새로 요청
       await prisma.friendship.delete({
-        where: { friendshipId: existingFriendship.friendshipId },
+        where: { friendshipId: myRequest.friendshipId },
       });
     }
   }
 
-  // 요청자 정보 가져오기
+  // 2. 상대방이 나에게 보낸 요청이 있는지 확인
+  const theirRequest = await prisma.friendship.findFirst({
+    where: {
+      requestedBy: targetUserId,
+      requestedTo: requesterId,
+      status: 'pending', // 'pending' 상태인 요청만 확인
+    },
+  });
+
+  if (theirRequest) {
+    // 상대방이 이미 나에게 요청을 보낸 경우 -> 자동 수락 처리
+    console.log(`[친구 요청] 양방향 요청 감지: ${requesterId} ↔ ${targetUserId}, 자동 수락 처리`);
+
+    await prisma.$transaction(async tx => {
+      // 기존 요청을 'accepted'로 업데이트
+      await tx.friendship.update({
+        where: { friendshipId: theirRequest.friendshipId },
+        data: {
+          status: 'accepted',
+          acceptedAt: new Date(),
+          isAccepted: true,
+        },
+      });
+
+      // 양쪽 사용자 정보 조회
+      const requester = await tx.user.findUnique({
+        where: { userId: requesterId },
+        select: { nickname: true },
+      });
+      const target = await tx.user.findUnique({
+        where: { userId: targetUserId },
+        select: { nickname: true },
+      });
+
+      // 원래 요청자(targetUser)에게 알림
+      await tx.notification.create({
+        data: {
+          fromUserId: requesterId,
+          toUserId: targetUserId,
+          type: 'friendRequest',
+          title: `${requester?.nickname}님과 친구가 되었습니다!`,
+        },
+      });
+
+      // 현재 요청자(requester)에게 알림
+      await tx.notification.create({
+        data: {
+          fromUserId: targetUserId,
+          toUserId: requesterId,
+          type: 'friendRequest',
+          title: `${target?.nickname}님과 친구가 되었습니다!`,
+        },
+      });
+    });
+
+    return; // 자동 수락이 완료
+  }
+
+  // 3. 위 조건에 해당하지 않는 경우, 새로운 친구 요청 생성
   const requester = await prisma.user.findUnique({
     where: { userId: requesterId },
     select: { nickname: true },
   });
 
-  // 트랜잭션으로 친구 요청과 알림을 함께 생성
   await prisma.$transaction(async tx => {
     await tx.friendship.create({
       data: {
@@ -174,8 +237,7 @@ export const sendFriendRequest = async (
         fromUserId: requesterId,
         toUserId: targetUserId,
         type: 'friendRequest',
-        title: `${requester?.nickname}님이 친구 요청을 보냈습니다.`, // content → title
-        // isRead와 status는 기본값 사용 (status: 'unread')
+        title: `${requester?.nickname}님이 친구 요청을 보냈습니다.`,
       },
     });
   });
@@ -258,15 +320,12 @@ export const handleFriendRequest = async (
     console.warn(`[친구 요청 처리 실패] 요청 ${requestId}는 이미 ${request.status} 상태임`);
 
     if (request.status === 'rejected' && action === 'REJECT') {
-      // 이미 거절된 요청을 다시 거절하려는 경우
       console.log(`[친구 요청] ${request.receiver.nickname}님이 이미 거절된 요청을 다시 거절 시도`);
       throw new AppError('FRIEND_010');
     } else if (request.status === 'accepted') {
-      // 이미 수락된 요청
       console.log(`[친구 요청] 이미 수락된 요청에 대한 처리 시도`);
       throw new AppError('FRIEND_001');
     } else {
-      // 기타 이미 처리된 요청
       throw new AppError('FRIEND_009');
     }
   }
@@ -444,7 +503,7 @@ export const inviteFriendToRoom = async (
 
   const result = await prisma.$transaction(async tx => {
     // 1. 알림 생성
-    const notification = await tx.notification.create({
+    await tx.notification.create({
       data: {
         fromUserId: userId,
         toUserId: friendId,
@@ -472,7 +531,7 @@ export const inviteFriendToRoom = async (
       },
     });
 
-    return { notification, inviter, video };
+    return { inviter, video };
   });
 
   let message;
@@ -499,22 +558,22 @@ export const inviteFriendToRoom = async (
     // Redis에서 친구의 socketId 찾기
     const friendSocketId = await redis.get(USER_SOCKET_KEY(friendId));
 
-    if (friendSocketId) {
+    if (friendSocketId && result.inviter) {
       // 특정 소켓으로 방 초대 알림 전송
 
       io.to(friendSocketId).emit('receiveDirectMessage', {
         type: 'receiveDirectMessage',
         data: {
-          senderId: result.inviter!.userId,
+          senderId: result.inviter.userId,
           receiverId: friendId,
           content: `${room.roomName} 방에 초대했습니다.`,
           messageType: 'roomInvite', //('general','roomInvite','bookmarkShare')
           createdAt: message?.createdAt,
           roomInvite: {
             inviter: {
-              userId: result.inviter!.userId,
-              nickname: result.inviter!.nickname,
-              profileImage: result.inviter!.profileImage,
+              userId: result.inviter.userId,
+              nickname: result.inviter.nickname,
+              profileImage: result.inviter.profileImage,
             },
             room: {
               roomId: room.roomId,
