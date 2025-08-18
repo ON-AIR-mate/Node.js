@@ -115,7 +115,7 @@ export const getCollectionDetailById = async (
       acc[room.roomId].bookmarks.push({
         bookmarkId: bookmark.bookmarkId,
         message: `${String(Math.floor(bookmark.timeline! / 60)).padStart(2, '0')}:${String(
-          (bookmark.timeline! % 60),
+          bookmark.timeline! % 60,
         ).padStart(2, '0')} ${bookmark.content}`,
         createdAt: bookmark.createdAt,
       });
