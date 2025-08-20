@@ -43,7 +43,7 @@ type BookmarkWithRelations = Prisma.BookmarkGetPayload<{
   include: {
     room: {
       include: {
-        video: true; // Room.video (YoutubeVideo)
+        youtube_videos: true; // Room.video (YoutubeVideo)
       };
     };
     collection: {
@@ -71,7 +71,7 @@ export const getBookmarks = async (userId: number, options: GetBookmarksOptions)
   const rows: BookmarkWithRelations[] = await prisma.bookmark.findMany({
     where: baseWhere,
     include: {
-      room: { include: { video: true } },
+      room: { include: { youtube_videos: true } },
       collection: { select: { title: true } },
     },
     orderBy: { createdAt: 'desc' },
@@ -108,8 +108,8 @@ export const getBookmarks = async (userId: number, options: GetBookmarksOptions)
     for (const b of list) {
       const roomId = b.roomId;
       const roomName = b.room?.roomName ?? null;
-      const videoTitle = b.room?.video?.title ?? null;
-      const videoThumbnail = b.room?.video?.thumbnail ?? null;
+      const videoTitle = b.room?.youtube_videos?.title ?? null;
+      const videoThumbnail = b.room?.youtube_videos?.thumbnail ?? null;
       const bookmarkCollectionTitle = b.collection?.title ?? null;
 
       let idx = map.get(roomId);
@@ -206,10 +206,21 @@ export const moveBookmarkToCollection = async (
     throw new Error('권한이 없습니다.');
   }
 
-  return await prisma.bookmark.update({
+  const res1 = await prisma.bookmark.update({
     where: { bookmarkId },
     data: { collectionId },
   });
+
+  const res2 = await prisma.collection.update({
+    where: { collectionId },
+    data: {
+      bookmarkCount: {
+        increment: 1, // 기존 값에서 +1
+      },
+    },
+  });
+
+  console.log('북마크 컬렉션으로 이동: ', res1.collectionId, ', ', res2.bookmarkCount);
 };
 
 // 5. 북마크로 방 생성 서비스
@@ -235,7 +246,7 @@ export const createRoomFromBookmark = async (
     include: {
       room: {
         include: {
-          video: true,
+          youtube_videos: true,
         },
       },
     },
@@ -245,7 +256,7 @@ export const createRoomFromBookmark = async (
     throw new Error('해당 북마크에 대한 권한이 없습니다.');
   }
 
-  const videoThumbnail = bookmark.room?.video?.thumbnail ?? '';
+  const videoThumbnail = bookmark.room?.youtube_videos?.thumbnail ?? '';
   const startTime = startFrom === 'BOOKMARK' ? (bookmark?.timeline ?? 0) : 0;
 
   if (!bookmark.room?.videoId) {
@@ -261,6 +272,15 @@ export const createRoomFromBookmark = async (
       hostId: userId,
       startType: startFrom,
       startTime: startTime,
+    },
+  });
+
+  //참가자 목록 추가
+  await prisma.roomParticipant.create({
+    data: {
+      roomId: newRoom.roomId,
+      userId: userId,
+      role: 'host',
     },
   });
 
