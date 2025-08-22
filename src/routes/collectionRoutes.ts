@@ -96,7 +96,41 @@ router.get('/', requireAuth, collectionController.getCollections);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/GetCollectionDetailDto'
+ *                 type: object
+ *                 properties:
+ *                   roomData:
+ *                     type: object
+ *                     properties:
+ *                       roomId:
+ *                         type: integer
+ *                         example: 333
+ *                       roomName:
+ *                         type: string
+ *                         example: 방이름1
+ *                       videoTitle:
+ *                         type: string
+ *                         example: 영상제목
+ *                       videoThumbnail:
+ *                         type: string
+ *                         example: 썸네일URL
+ *                       collectionTitle:
+ *                         type: string
+ *                         nullable: true
+ *                         example: null
+ *                   bookmarks:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         bookmarkId:
+ *                           type: integer
+ *                           example: 456
+ *                         message:
+ *                           type: string
+ *                           example: 00:15:30 재밌는 장면
+ *                         timeline:
+ *                           type: integer
+ *                           example: 930
  *       401:
  *         description: 인증되지 않은 사용자 또는 권한 없음
  *       404:
