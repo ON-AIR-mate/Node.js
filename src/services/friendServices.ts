@@ -565,7 +565,7 @@ export const inviteFriendToRoom = async (
       duration: result.video?.duration,
       isPrivate: result.video?.isPrivate,
     };
-  
+
     message = await saveDirectMessage(userId, {
       receiverId: friendId,
       content: JSON.stringify(contentObj),
