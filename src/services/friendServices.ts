@@ -551,9 +551,24 @@ export const inviteFriendToRoom = async (
   let message;
   // 4. DM으로 초대 메시지 전송
   try {
+    const contentObj = {
+      message: `${room.roomName} 방에 초대했습니다.`,
+      roomId: room.roomId,
+      roomName: room.roomName,
+      hostNickname: host?.nickname,
+      hostProfileImage: host?.profileImage,
+      hostPopularity: host?.popularity,
+      currentParticipants: room.currentParticipants,
+      maxParticipants: room.maxParticipants,
+      videoTitle: result.video?.videoTitle || '',
+      videoThumbnail: result.video?.videoThumbnail || '',
+      duration: result.video?.duration,
+      isPrivate: result.video?.isPrivate,
+    };
+
     message = await saveDirectMessage(userId, {
       receiverId: friendId,
-      content: `${room.roomName} 방에 초대했습니다.`,
+      content: JSON.stringify(contentObj),
       type: 'roomInvite',
     });
   } catch (error) {
